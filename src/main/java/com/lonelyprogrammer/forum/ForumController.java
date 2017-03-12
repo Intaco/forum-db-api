@@ -18,6 +18,7 @@ import java.util.List;
 import static com.lonelyprogrammer.forum.auth.utils.ResponseUtils.buildErrorResponse;
 
 @RestController
+@RequestMapping(value = "api/forum")
 @CrossOrigin // for localhost usage
 //@CrossOrigin(origins = "https://[...].herokuapp.com") //for remote usage
 public class ForumController {
@@ -26,10 +27,10 @@ public class ForumController {
     @NotNull
     private final ForumsService forumsService;
 
-    @RequestMapping(path = "forum/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity register(@RequestBody ForumEntity data) {
         logger.debug("/forum create called with slug: {}", data.getSlug());
-        final Either<ForumEntity, List<ErrorResponse>> result = forumsService.createForum(data);
+        final Either<ForumEntity, ErrorResponse> result = forumsService.createForum(data);
         if (result.isLeft()) {
             final ForumEntity forum = result.getLeft();
             if (forum.getSlug().equals(data.getSlug()) && forumsService.forumsDifferExceptSlug(forum, data)) {
@@ -40,10 +41,11 @@ public class ForumController {
         return buildErrorResponse(result.getRight());
     }
 
-    @RequestMapping(path = "forum/{slug}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(path = "/{slug}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity register(@PathVariable String slug, @RequestBody ForumCreateBranchEntity data) {
         logger.debug("/forum disqus branch called with slug: {}", data.getSlug());
-        final Either<ForumEntity, List<ErrorResponse>> result = forumsService.createForumBranch(data, slug);
+        final Either<ForumEntity,ErrorResponse> result = forumsService.createForumBranch(data, slug);
+
     }
 
     public ForumController(@NotNull ForumsService forumsService) {

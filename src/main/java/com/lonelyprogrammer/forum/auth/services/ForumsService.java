@@ -25,23 +25,19 @@ public class ForumsService {
         this.forumDAO = forumDAO;
         this.userDAO = userDAO;
     }
-    public Either<ForumEntity, List<ErrorResponse>> createForum(ForumEntity data){
+    public Either<ForumEntity, ErrorResponse> createForum(ForumEntity data){
         final ForumEntity loaded = forumDAO.load(data.getSlug());
         if (loaded != null){
             return Either.left(loaded);
+        } else if (userDAO.load(data.getUser()) == null){
+            return Either.right(new ErrorResponse("Владелец форума не найден", ErrorState.NOT_FOUND));
         }
-        final List<ErrorResponse> errors = new ArrayList<>();
-        if (userDAO.load(data.getUser()) == null){
-            errors.add(new ErrorResponse("Владелец форума не найден", ErrorState.NOT_FOUND));
-        }
-        if (errors.isEmpty()){
-            forumDAO.add(data);
-            return Either.left(data);
-        }
-        return Either.right(errors);
+        //noinspection SuspiciousIndentAfterControlStatement
+        forumDAO.add(data);
+        return Either.left(data);
     }
-    public Either<ForumEntity, List<ErrorResponse>> createForumBranch(ForumCreateBranchEntity data, String forumSlug){
-
+    public Either<ForumEntity, ErrorResponse> createForumBranch(ForumCreateBranchEntity data, String forumSlug){
+        
     }
 
     @SuppressWarnings("OverlyComplexBooleanExpression")
