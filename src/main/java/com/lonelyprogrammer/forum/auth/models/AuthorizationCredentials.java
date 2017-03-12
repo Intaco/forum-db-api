@@ -9,7 +9,7 @@ public class AuthorizationCredentials {
     protected final String password;
     protected final String email;
     @JsonCreator
-    AuthorizationCredentials(@JsonProperty("login") String login, @JsonProperty("password") String password, @JsonProperty("email") String email) {
+    AuthorizationCredentials(@JsonProperty("title") String login, @JsonProperty("password") String password, @JsonProperty("email") String email) {
         this.login = login;
         this.password = password;
         this.email = email;
