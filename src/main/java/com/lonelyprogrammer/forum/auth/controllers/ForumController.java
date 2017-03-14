@@ -1,17 +1,11 @@
-package com.lonelyprogrammer.forum;
+package com.lonelyprogrammer.forum.auth.controllers;
 
 
-import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
-import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
 import com.lonelyprogrammer.forum.auth.services.ForumsService;
-import com.msiops.ground.either.Either;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.lonelyprogrammer.forum.auth.models.*;
 
 import static com.lonelyprogrammer.forum.auth.utils.ResponseUtils.buildErrorResponse;
 
@@ -25,7 +19,7 @@ public class ForumController {
     @NotNull
     private final ForumsService forumsService;
 
-    @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+/*    @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity register(@RequestBody ForumEntity data) {
         logger.debug("/forum create called with slug: {}", data.getSlug());
         final Either<ForumEntity, ErrorResponse> result = forumsService.createForum(data);
@@ -43,9 +37,12 @@ public class ForumController {
     public ResponseEntity register(@PathVariable String slug, @RequestBody ForumThreadEntity data) {
         logger.debug("/forum disqus branch called with slug: {}", data.getSlug());
         final Either<ForumThreadEntity,ErrorResponse> result = forumsService.createForumThread(data, slug);
+        if (!result.isLeft()) {
+            return buildErrorResponse(result.getRight());
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(result.getLeft());
 
-
-    }
+    }*/
 
     public ForumController(@NotNull ForumsService forumsService) {
         this.forumsService = forumsService;
