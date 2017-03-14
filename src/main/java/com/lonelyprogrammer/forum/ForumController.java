@@ -1,7 +1,7 @@
 package com.lonelyprogrammer.forum;
 
 
-import com.lonelyprogrammer.forum.auth.models.entities.ForumCreateBranchEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
 import com.lonelyprogrammer.forum.auth.services.ForumsService;
 import com.msiops.ground.either.Either;
@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.lonelyprogrammer.forum.auth.models.*;
-
-import java.util.List;
 
 import static com.lonelyprogrammer.forum.auth.utils.ResponseUtils.buildErrorResponse;
 
@@ -42,9 +40,10 @@ public class ForumController {
     }
 
     @RequestMapping(path = "/{slug}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity register(@PathVariable String slug, @RequestBody ForumCreateBranchEntity data) {
+    public ResponseEntity register(@PathVariable String slug, @RequestBody ForumThreadEntity data) {
         logger.debug("/forum disqus branch called with slug: {}", data.getSlug());
-        final Either<ForumEntity,ErrorResponse> result = forumsService.createForumBranch(data, slug);
+        final Either<ForumThreadEntity,ErrorResponse> result = forumsService.createForumThread(data, slug);
+
 
     }
 

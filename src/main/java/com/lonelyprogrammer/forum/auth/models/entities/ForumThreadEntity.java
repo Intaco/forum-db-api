@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.sql.Timestamp;
 
-public class ForumCreateBranchEntity {
+public class ForumThreadEntity {
     protected final String author;
     protected final Timestamp created;
     protected final String forum;
@@ -16,10 +16,10 @@ public class ForumCreateBranchEntity {
     protected final String title;
     protected final Integer votes;
     @JsonCreator
-    public ForumCreateBranchEntity(@JsonProperty("author") String author, @JsonProperty("created") Timestamp created,
-                                   @JsonProperty("forum") String forum, @JsonProperty("id") Integer id, @JsonProperty("message") String message,
-                                   @JsonProperty("slug") String slug, @JsonProperty("title") String title,
-                                   @JsonProperty("votes") Integer votes) {
+    public ForumThreadEntity(@JsonProperty("author") String author, @JsonProperty("created") Timestamp created,
+                             @JsonProperty("forum") String forum, @JsonProperty("id") Integer id, @JsonProperty("message") String message,
+                             @JsonProperty("slug") String slug, @JsonProperty("title") String title,
+                             @JsonProperty("votes") Integer votes) {
         this.author = author;
         this.created = created;
         this.forum = forum;
