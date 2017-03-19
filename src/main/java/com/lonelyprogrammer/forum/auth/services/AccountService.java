@@ -45,7 +45,28 @@ public class AccountService {
     public List<UserEntity> loadSimilarUsers(UserEntity entity){
         return userDAO.getSimilarUsers(entity);
     }
-
+    @Nullable
+    public UserEntity loadProfile(String nickname){
+        return userDAO.getByNickname(nickname);
+    }
+    public HttpStatus updateProfile(UserEntity entity){
+        final UserEntity byNickname = userDAO.getByNickname(entity.getNickname());
+        if (byNickname == null){ //check if user exists
+            return HttpStatus.NOT_FOUND;
+        }
+        if (emptyUserDesc(entity)){
+            return HttpStatus.OK;
+        }
+        final UserEntity byEmail = userDAO.getByEmail(entity.getEmail());
+        if (byEmail != null && !byEmail.getNickname().equals(entity.getNickname())){ //check if user with that email already exists
+            return HttpStatus.CONFLICT;
+        }
+        userDAO.updateUser(entity);
+        return HttpStatus.OK;
+    }
+    private boolean emptyUserDesc(UserEntity entity){
+        return isEmpty(entity.getEmail()) && isEmpty(entity.getFullName()) && isEmpty(entity.getAbout());
+    }
 
 
     public AccountService(@NotNull UserDAO userDAO) {
