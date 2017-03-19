@@ -4,9 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserEntity {
+    @JsonProperty
     protected String nickname;
+    @JsonProperty
     protected String fullName;
+    @JsonProperty
     protected String about;
+    @JsonProperty
     protected String email;
     @JsonCreator
     public UserEntity(@JsonProperty("nickname") String nickname, @JsonProperty("about") String about,

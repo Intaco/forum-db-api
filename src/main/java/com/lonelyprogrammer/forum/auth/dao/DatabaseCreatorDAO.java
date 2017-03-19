@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DatabaseCreatorDAO {
     private final JdbcTemplate template;
-    @Autowired
+
     public DatabaseCreatorDAO(JdbcTemplate template) {
         this.template = template;
     }

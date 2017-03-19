@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import static com.lonelyprogrammer.forum.auth.utils.ResponseUtils.buildErrorResponse;
-
 @RestController
 @RequestMapping(value = "api/forum")
 @CrossOrigin // for localhost usage

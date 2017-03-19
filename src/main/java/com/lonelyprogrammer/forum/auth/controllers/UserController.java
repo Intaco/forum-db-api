@@ -1,5 +1,6 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
+import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
 import com.lonelyprogrammer.forum.auth.models.*;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import com.lonelyprogrammer.forum.auth.services.AccountService;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
-import static com.lonelyprogrammer.forum.auth.utils.ResponseUtils.buildErrorResponse;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/user")
@@ -23,19 +24,24 @@ public class UserController {
 
     @NotNull
     private final AccountService accountService;
+    @NotNull
+    private final DatabaseCreatorDAO databaseCreatorDAO;
 
-    @RequestMapping(path = "/{nickname}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity create(@PathVariable String username, @RequestBody UserEntity data, HttpSession httpSession) {
+    @RequestMapping(path = "/{username}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    public ResponseEntity create(@PathVariable(name = "username") String username, @RequestBody UserEntity data) {
         logger.debug("/create called with username: {}", username);
         data.setNickname(username);
         final HttpStatus status = accountService.create(data);
         if (status == HttpStatus.CONFLICT){
-
+            final List<UserEntity> loaded = accountService.loadSimilarUsers(data); //should never be empty
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(loaded);
         }
-        return ResponseEntity.ok(new SuccessResponseMessage("Successfully registered user"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(data);
     }
 
-    public UserController(@NotNull AccountService accountService) {
+    public UserController(@NotNull AccountService accountService, @NotNull DatabaseCreatorDAO databaseCreatorDAO) {
         this.accountService = accountService;
+        this.databaseCreatorDAO = databaseCreatorDAO;
+        databaseCreatorDAO.clean();
     }
 }

@@ -3,6 +3,7 @@ package com.lonelyprogrammer.forum.auth.services;
 import com.lonelyprogrammer.forum.auth.dao.UserDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class AccountService {
      * @param entity - user to compare
      * @return - all users with same nickname / e-mail
      */
+    @NotNull
     public List<UserEntity> loadSimilarUsers(UserEntity entity){
         return userDAO.getSimilarUsers(entity);
     }
