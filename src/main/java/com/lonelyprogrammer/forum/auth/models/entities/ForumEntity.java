@@ -14,7 +14,7 @@ public class ForumEntity {
     protected final String slug;
 
     @JsonCreator
-    ForumEntity(@JsonProperty("title") String title, @JsonProperty("user") String user, @JsonProperty("posts") Integer postsCount
+    public ForumEntity(@JsonProperty("title") String title, @JsonProperty("user") String user, @JsonProperty("posts") Integer postsCount
             ,@JsonProperty("threads") Integer threadsCount,@JsonProperty("slug") String slug) {
         this.title = title;
         this.user = user;

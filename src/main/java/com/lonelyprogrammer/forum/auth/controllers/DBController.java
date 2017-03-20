@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Created by nikita on 14.03.17.
  */
 @RestController
-@RequestMapping(value = "api/db")
+@RequestMapping(value = "api/service")
 @CrossOrigin // for localhost usage
 
 public class DBController {
@@ -26,7 +26,7 @@ public class DBController {
     }
     @RequestMapping(path = "/clear", method = RequestMethod.POST)
     public ResponseEntity clear(){
-        databaseCreatorDAO.clean();
+        databaseCreatorDAO.reset();
         return ResponseEntity.ok("DB cleared");
     }
 }

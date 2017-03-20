@@ -4,6 +4,10 @@ import com.lonelyprogrammer.forum.auth.dao.ForumDAO;
 import com.lonelyprogrammer.forum.auth.dao.ThreadDAO;
 import com.lonelyprogrammer.forum.auth.dao.UserDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,24 +20,33 @@ public class ForumsService {
     private UserDAO userDAO;
     private ThreadDAO threadDAO;
 
-/*
+
     public ForumsService(@NotNull ForumDAO forumDAO, @NotNull UserDAO userDAO, @NotNull ThreadDAO threadDAO) {
         this.forumDAO = forumDAO;
         this.userDAO = userDAO;
         this.threadDAO = threadDAO;
     }
-
-    public Either<ForumEntity, ErrorResponse> createForum(ForumEntity data) {
-        final ForumEntity loaded = forumDAO.load(data.getSlug());
-        if (userDAO.load(data.getUser()) == null) {
-            return Either.right(new ErrorResponse("Владелец форума не найден", ExternalError.NOT_FOUND));
-        } else if (loaded != null) {
-            return Either.left(loaded);
-        }
-        //noinspection SuspiciousIndentAfterControlStatement
-        forumDAO.add(data);
-        return Either.left(data);
+    @Nullable
+    public ForumEntity getBySlug(String slug){
+        return forumDAO.getBySlug(slug);
     }
+
+    public HttpStatus createForum(ForumEntity data) {
+        if (forumDAO.getBySlug(data.getSlug()) != null){
+            return HttpStatus.CONFLICT;
+        }
+
+        if (userDAO.getByNickname(data.getUser()) == null) {
+            return HttpStatus.NOT_FOUND;
+        }
+        try{
+            forumDAO.add(data);
+        } catch (DuplicateKeyException e){
+            return HttpStatus.CONFLICT;
+        }
+        return HttpStatus.CREATED;
+    }
+/*
 
     public Either<ForumThreadEntity, ErrorResponse> createForumThread(ForumThreadEntity data, String forumSlug) {
         final ForumThreadEntity loaded = threadDAO.load(data.getSlug());
@@ -49,6 +62,7 @@ public class ForumsService {
         return Either.left(data);
     }
 */
+
 
     @SuppressWarnings("OverlyComplexBooleanExpression")
     public boolean forumsDifferExceptSlug(ForumEntity forum, ForumEntity data) {

@@ -24,8 +24,6 @@ public class UserController {
 
     @NotNull
     private final AccountService accountService;
-    @NotNull
-    private final DatabaseCreatorDAO databaseCreatorDAO;
 
     @RequestMapping(path = "/{nickname}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity create(@PathVariable(name = "nickname") String nickname, @RequestBody UserEntity data) {
@@ -60,7 +58,5 @@ public class UserController {
 
     public UserController(@NotNull AccountService accountService, @NotNull DatabaseCreatorDAO databaseCreatorDAO) {
         this.accountService = accountService;
-        this.databaseCreatorDAO = databaseCreatorDAO;
-        databaseCreatorDAO.clean();
     }
 }
