@@ -3,10 +3,13 @@ package com.lonelyprogrammer.forum.auth.controllers;
 
 import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
+import com.lonelyprogrammer.forum.auth.services.AccountService;
 import com.lonelyprogrammer.forum.auth.services.ForumsService;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.springframework.http.HttpStatus.*;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,39 +17,39 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "api/forum")
 @CrossOrigin // for localhost usage
-//@CrossOrigin(origins = "https://[...].herokuapp.com") //for remote usage
 public class ForumController {
     Logger logger = LoggerFactory.getLogger(ForumController.class);
 
     @NotNull
     private final ForumsService forumsService;
+    @NotNull
+    private final AccountService accountService;
 
-    @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(path = "/create", method = RequestMethod.POST)
     public ResponseEntity createForum(@RequestBody ForumEntity data) {
         logger.debug("/forum create called with slug: {}", data.getSlug());
         final HttpStatus status = forumsService.createForum(data);
 
-        if (status == HttpStatus.NOT_FOUND){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } else if (status == HttpStatus.CONFLICT){
+        if (status == NOT_FOUND){
+            return ResponseEntity.status(NOT_FOUND).build();
+        } else if (status == CONFLICT){
             final ForumEntity loaded = forumsService.getBySlug(data.getSlug());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(loaded);
+            return ResponseEntity.status(CONFLICT).body(loaded);
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(data);
+        return ResponseEntity.status(CREATED).body(data);
     }
-/*
-    @RequestMapping(path = "/{slug}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity register(@PathVariable String slug, @RequestBody ForumThreadEntity data) {
-        logger.debug("/forum disqus branch called with slug: {}", data.getSlug());
-        final Either<ForumThreadEntity,ErrorResponse> result = forumsService.createForumThread(data, slug);
-        if (!result.isLeft()) {
-            return buildErrorResponse(result.getRight());
+    @RequestMapping(path = "/{slug}/details", method = RequestMethod.GET)
+    public ResponseEntity getDetails(@PathVariable(name = "slug") String slug) {
+        logger.debug("/forum details called with slug: {}", slug);
+        final ForumEntity loaded = forumsService.getBySlug(slug);
+        if (loaded == null){
+            return ResponseEntity.status(NOT_FOUND).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(result.getLeft());
+        return ResponseEntity.ok(loaded);
+    }
 
-    }*/
-
-    public ForumController(@NotNull ForumsService forumsService) {
+    public ForumController(@NotNull ForumsService forumsService, @NotNull AccountService accountService) {
         this.forumsService = forumsService;
+        this.accountService = accountService;
     }
 }

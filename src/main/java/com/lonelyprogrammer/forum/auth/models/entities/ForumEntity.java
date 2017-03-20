@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ForumEntity {
     protected final String title;
-    protected final String user;
+    protected String user;
     @JsonIgnore
     protected final Integer postsCount;
     @JsonIgnore
@@ -44,4 +44,7 @@ public class ForumEntity {
         return slug;
     }
 
+    public void setUser(String user) {
+        this.user = user;
+    }
 }

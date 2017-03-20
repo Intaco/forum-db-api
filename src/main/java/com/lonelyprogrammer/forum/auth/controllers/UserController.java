@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import static org.springframework.http.HttpStatus.*;
 import javax.servlet.http.HttpSession;
 
 import java.util.List;
@@ -30,18 +30,18 @@ public class UserController {
         logger.debug("/create called with nickname: {}", nickname);
         data.setNickname(nickname);
         final HttpStatus status = accountService.create(data);
-        if (status == HttpStatus.CONFLICT){
+        if (status == CONFLICT){
             final List<UserEntity> loaded = accountService.loadSimilarUsers(data); //should never be empty
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(loaded);
+            return ResponseEntity.status(CONFLICT).body(loaded);
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(data);
+        return ResponseEntity.status(CREATED).body(data);
     }
     @RequestMapping(path = "/{nickname}/profile", method = RequestMethod.GET)
     public ResponseEntity getProfile(@PathVariable(name = "nickname") String nickname) {
         logger.debug("/get profile called with nickname: {}", nickname);
         final UserEntity data = accountService.loadProfile(nickname);
         if (data == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(NOT_FOUND).build();
         }
         return ResponseEntity.ok(data);
     }
@@ -50,7 +50,7 @@ public class UserController {
         logger.debug("/update profile called with nickname: {}", nickname);
         data.setNickname(nickname);
         final HttpStatus status = accountService.updateProfile(data);
-        if (status != HttpStatus.OK){
+        if (status != OK){
             return ResponseEntity.status(status).build();
         }
         return ResponseEntity.ok(accountService.loadProfile(nickname));
