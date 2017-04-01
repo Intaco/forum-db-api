@@ -3,6 +3,7 @@ package com.lonelyprogrammer.forum.auth.controllers;
 
 import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.services.AccountService;
 import com.lonelyprogrammer.forum.auth.services.ForumsService;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +47,15 @@ public class ForumController {
             return ResponseEntity.status(NOT_FOUND).build();
         }
         return ResponseEntity.ok(loaded);
+    }
+    @RequestMapping(path = "/{slug}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    public ResponseEntity createThread(@PathVariable(name = "slug") String slug, @RequestBody ForumThreadEntity data) {
+        logger.debug("/forum threads create called with slug: {}", slug);
+        ForumThreadEntity created = forumsService.createThread(data);
+        if (created.getId() !=null){
+            return ResponseEntity.status(CREATED).body(created);
+        }
+        return ResponseEntity.status(NOT_FOUND).build();
     }
 
     public ForumController(@NotNull ForumsService forumsService, @NotNull AccountService accountService) {

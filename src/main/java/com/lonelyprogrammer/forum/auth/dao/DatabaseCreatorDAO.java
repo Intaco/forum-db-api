@@ -17,14 +17,15 @@ public class DatabaseCreatorDAO {
         this.db = template;
     }
     public void reset(){
+        clearThreads();
         clearForums();
         clearUsers();
-
         createUsers();
         createForums();
+        createThreads();
     }
     private void clearUsers(){
-        final String sql = "DROP TABLE IF EXISTS users ;";
+        final String sql = "DROP TABLE IF EXISTS users CASCADE;";
         db.execute(sql);
     }
     private void createUsers(){
@@ -47,8 +48,20 @@ public class DatabaseCreatorDAO {
 
     }
     private void clearForums(){
-        final String sql = "DROP TABLE IF EXISTS forums";
+        final String sql = "DROP TABLE IF EXISTS forums CASCADE ;";
         db.execute(sql);
     }
-
+    private void clearThreads(){
+        final String sql = "DROP TABLE IF EXISTS threads CASCADE;";
+        db.execute(sql);
+    }
+    private void createThreads() {
+        final String sql = "CREATE TABLE IF NOT EXISTS threads (id SERIAL PRIMARY KEY, title VARCHAR(128) NOT NULL, "
+                + "author CITEXT NOT NULL, forum CITEXT NOT NULL, message TEXT NOT NULL, votes BIGINT NOT NULL DEFAULT 0, "
+                + "slug CITEXT UNIQUE, created TIMESTAMP NOT NULL DEFAULT current_timestamp," +
+                " FOREIGN KEY (author) REFERENCES users(nickname), FOREIGN KEY (forum) REFERENCES forums(slug)); "
+                + "CREATE UNIQUE INDEX ON threads (id); " + "CREATE UNIQUE INDEX ON threads (slug); "
+                + "CREATE INDEX ON threads (author); " + "CREATE INDEX ON threads (forum); ";
+        db.execute(sql);
+    }
 }

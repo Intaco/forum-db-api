@@ -8,15 +8,15 @@ import java.sql.Timestamp;
 
 public class ForumThreadEntity {
     protected final String author;
-    protected final Timestamp created;
+    protected final String created;
     protected final String forum;
-    protected final Integer id;
+    protected Integer id;
     protected final String message;
-    protected final String slug;
+    protected String slug;
     protected final String title;
     protected final Integer votes;
     @JsonCreator
-    public ForumThreadEntity(@JsonProperty("author") String author, @JsonProperty("created") Timestamp created,
+    public ForumThreadEntity(@JsonProperty("author") String author, @JsonProperty("created") String created,
                              @JsonProperty("forum") String forum, @JsonProperty("id") Integer id, @JsonProperty("message") String message,
                              @JsonProperty("slug") String slug, @JsonProperty("title") String title,
                              @JsonProperty("votes") Integer votes) {
@@ -34,7 +34,7 @@ public class ForumThreadEntity {
         return author;
     }
 
-    public Timestamp getCreated() {
+    public String getCreated() {
         return created;
     }
 
@@ -60,5 +60,13 @@ public class ForumThreadEntity {
 
     public Integer getVotes() {
         return votes;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 }

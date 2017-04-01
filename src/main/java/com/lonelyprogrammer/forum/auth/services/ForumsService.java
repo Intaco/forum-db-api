@@ -4,6 +4,7 @@ import com.lonelyprogrammer.forum.auth.dao.ForumDAO;
 import com.lonelyprogrammer.forum.auth.dao.ThreadDAO;
 import com.lonelyprogrammer.forum.auth.dao.UserDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,16 @@ public class ForumsService {
             return HttpStatus.CONFLICT;
         }
         return HttpStatus.CREATED;
+    }
+    public ForumThreadEntity createThread(ForumThreadEntity data){
+        ForumThreadEntity added = threadDAO.add(data);
+
+        return added;
+    }
+    @Nullable
+    public ForumThreadEntity loadForumThread(String slug){
+        return threadDAO.getBySlug(slug);
+
     }
 
     @SuppressWarnings("OverlyComplexBooleanExpression")

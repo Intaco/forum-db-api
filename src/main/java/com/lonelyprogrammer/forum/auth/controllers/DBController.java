@@ -24,7 +24,7 @@ public class DBController {
     public DBController(DatabaseCreatorDAO databaseCreatorDAO) {
         this.databaseCreatorDAO = databaseCreatorDAO;
     }
-    @RequestMapping(path = "/clear", method = RequestMethod.POST)
+    @RequestMapping(path = "/clear", method = RequestMethod.GET)
     public ResponseEntity clear(){
         databaseCreatorDAO.reset();
         return ResponseEntity.ok("DB cleared");
