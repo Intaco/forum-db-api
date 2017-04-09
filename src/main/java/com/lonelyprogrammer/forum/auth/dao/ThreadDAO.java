@@ -1,6 +1,7 @@
 package com.lonelyprogrammer.forum.auth.dao;
 
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,8 +9,11 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by nikita
@@ -20,15 +24,17 @@ import java.time.format.DateTimeFormatter;
 public class ThreadDAO {
 
     private final JdbcTemplate db;
+
     public ThreadDAO(JdbcTemplate template) {
         this.db = template;
     }
-    public ForumThreadEntity add(ForumThreadEntity entity){
-        try{
+
+    public ForumThreadEntity add(ForumThreadEntity entity) {
+        try {
             final String sql = "INSERT INTO threads(title, author, forum, message) VALUES(?,?,?,?) RETURNING id;"; //get id
             Integer id = db.queryForObject(sql, Integer.class, entity.getTitle(), entity.getAuthor(), entity.getForum(), entity.getMessage());
             entity.setId(id);
-        } catch (DataAccessException e){
+        } catch (DataAccessException e) {
             throw e;
         }
         return entity;
@@ -44,7 +50,7 @@ public class ThreadDAO {
         final int votes = resultSet.getInt("votes");
         final String title = resultSet.getString("title");
         final String created = resultSet.getTimestamp("created").toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        return new ForumThreadEntity(author,created,forum,id,message,slug,title,votes);
+        return new ForumThreadEntity(author, created, forum, id, message, slug, title, votes);
     };
 
     @Nullable
@@ -59,6 +65,7 @@ public class ThreadDAO {
         }
         return loaded;
     }
+
     @Nullable
     public ForumThreadEntity getBySlug(String slug) {
 
@@ -70,5 +77,19 @@ public class ThreadDAO {
 
         }
         return loaded;
+    }
+
+    @NotNull
+    public List<ForumThreadEntity> getForumThreadsBySlug(String slug, Integer limit, @Nullable Timestamp since, boolean desc) {
+        List<ForumThreadEntity> threads = new ArrayList<>();
+        try {
+            String query = String.format("SELECT * FROM threads WHERE forum = '%s' ", slug);
+            if (limit!= 0) query+="LIMIT "+limit;
+            if (desc) query+="ORDER BY created desc";
+            threads = db.query(query, threadMapper);
+        } catch (DataAccessException e) {
+
+        }
+        return threads;
     }
 }

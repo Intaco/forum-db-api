@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "api/forum")
 @CrossOrigin // for localhost usage
@@ -56,6 +58,18 @@ public class ForumController {
             return ResponseEntity.status(CREATED).body(created);
         }
         return ResponseEntity.status(NOT_FOUND).build();
+    }
+
+    @RequestMapping(path = "/{slug}/threads", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity getThreads(@PathVariable(name = "slug") String slug, @RequestParam(name = "limit", required = false) Integer limit,
+                                     @RequestParam(name = "since", required = false) String since,
+                                     @RequestParam(name = "desc", required = false) Boolean desc) {
+        logger.debug("/forum threads info called with slug: {}", slug);
+        final List<ForumThreadEntity> loaded =  forumsService.loadThreadsByForum(slug, limit, since, desc);
+        if (loaded.isEmpty()){
+            return ResponseEntity.status(NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(loaded);
     }
 
     public ForumController(@NotNull ForumsService forumsService, @NotNull AccountService accountService) {
