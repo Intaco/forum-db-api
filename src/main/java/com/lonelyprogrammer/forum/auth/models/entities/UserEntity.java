@@ -7,7 +7,7 @@ public class UserEntity {
     @JsonProperty
     protected String nickname;
     @JsonProperty
-    protected String fullName;
+    protected String fullname;
     @JsonProperty
     protected String about;
     @JsonProperty
@@ -18,7 +18,7 @@ public class UserEntity {
         this.nickname = nickname;
         this.about = about;
         this.email = email;
-        this.fullName = fullName;
+        this.fullname = fullName;
     }
 
     public String getNickname() {
@@ -34,7 +34,7 @@ public class UserEntity {
     }
 
     public String getFullName() {
-        return fullName;
+        return fullname;
     }
 
     public void setNickname(String nickname) {
