@@ -32,23 +32,6 @@ public class ThreadDAO {
         this.db = template;
     }
 
-
-    public ForumThreadEntity add2(ForumThreadEntity entity) {
-        try {
-            final String insertQuery = "INSERT INTO threads(title, author, forum, message) VALUES(?,?,?,?) RETURNING id;"; //get id
-            final Integer id = db.queryForObject(insertQuery, Integer.class, entity.getTitle(), entity.getAuthor(), entity.getForum(), entity.getMessage());
-            entity.setId(id);
-            final String updateForumQuery = String.format("UPDATE forum SET threads = threads + 1 WHERE slug = '%s'", entity.getForum());
-            db.update(updateForumQuery);
-
-        } catch (DataAccessException e) {
-            throw e;
-        }
-        return entity;
-        //return THIS entity with id from db
-    }
-
-
     private final RowMapper<ForumThreadEntity> threadMapper = (resultSet, rowNum) -> {
         final int id = resultSet.getInt("id");
         final String slug = resultSet.getString("slug");
@@ -61,7 +44,8 @@ public class ThreadDAO {
         return new ForumThreadEntity(author, created, forum, id, message, slug, title, votes);
     };
 
-    public ForumThreadEntity add(ForumThreadEntity thread) {
+    @Nullable
+    public ForumThreadEntity add(ForumThreadEntity thread) { // TODO refactor
         String query = new StringBuilder()
                 .append("INSERT INTO threads(title, author, forum, message) ")
                 .append("VALUES(?,?,?,?) RETURNING id;")
@@ -126,47 +110,23 @@ public class ThreadDAO {
         return loaded;
     }
 
+    @Nullable
     public List<ForumThreadEntity> getByForum(String slug, Integer limit, @Nullable Timestamp time, boolean desc) {
-        StringBuilder queryBuilder = new StringBuilder()
-                .append("SELECT * FROM threads WHERE forum = ? ");
-
-        if (time != null) {
-            if (desc) {
-                queryBuilder.append("AND created <= ? ");
-            } else
-                queryBuilder.append("AND created >= ? ");
+        final StringBuilder builder = new StringBuilder(String.format("SELECT * FROM threads WHERE forum = '%s' ", slug));
+        if (time != null){
+            if (desc) builder.append(String.format("AND created <= '%s'", time));
+            else builder.append(String.format("AND created >= '%s'", time));
         }
-
         if (desc) {
-            queryBuilder.append("ORDER BY created DESC ");
-        } else
-            queryBuilder.append("ORDER BY created ");
+            builder.append("ORDER BY created DESC ");
+        } else builder.append("ORDER BY created ");
 
-        queryBuilder.append("LIMIT ? ;");
+        builder.append(String.format("LIMIT '%s';", limit));
+        final String query = builder.toString();
 
-        String query = queryBuilder.toString();
-
-        ArrayList<ForumThreadEntity> threads = null;
+        List<ForumThreadEntity> threads = null;
         try {
-            List<Map<String, Object>> rows;
-            if (time != null)
-                rows = db.queryForList(query, slug, time, limit);
-            else
-                rows = db.queryForList(query, slug, limit);
-
-            threads = new ArrayList<>();
-            for (Map<String, Object> row : rows) {
-                threads.add(new ForumThreadEntity(row.get("author").toString(), Timestamp.valueOf(row.get("created").toString())
-                                .toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                                row.get("forum").toString(),
-                                Integer.parseInt(row.get("id").toString()),
-                                row.get("message").toString(),
-                                row.get("slug").toString(),
-                                row.get("title").toString(),
-                                Integer.parseInt(row.get("votes").toString())
-                        )
-                );
-            }
+            threads = db.query(query, threadMapper);
         } catch (DataAccessException e) {
             System.out.println(e.getMessage());
             return null;
