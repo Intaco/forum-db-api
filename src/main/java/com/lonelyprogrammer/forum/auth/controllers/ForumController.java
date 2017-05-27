@@ -65,10 +65,17 @@ public class ForumController {
                                      @RequestParam(name = "since", required = false) String since,
                                      @RequestParam(name = "desc", required = false) Boolean desc) {
         logger.debug("/forum threads info called with slug: {}", slug);
-        final List<ForumThreadEntity> loaded =  forumsService.loadThreadsByForum(slug, limit, since, desc);
-        if (loaded.isEmpty()){
+        if (desc == null){
+            desc = false;
+        }
+        if (limit == null ){
+            limit = 0;
+        }
+        final ForumEntity forum = forumsService.getBySlug(slug);
+        if (forum == null){
             return ResponseEntity.status(NOT_FOUND).build();
         }
+        final List<ForumThreadEntity> loaded = forumsService.loadThreadsByForum(slug, limit, since, desc);
         return ResponseEntity.ok(loaded);
     }
 

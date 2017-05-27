@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -76,7 +77,7 @@ public class ForumsService {
             final String formatted = ZonedDateTime.parse(since).format(DateTimeFormatter.ISO_INSTANT);
             sinceTime = new Timestamp(ZonedDateTime.parse(formatted).toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli());
         }
-        return threadDAO.getForumThreadsBySlug(forumSlug, limit, sinceTime, desc);
+        return threadDAO.getByForum(forumSlug, limit, sinceTime, desc);
     }
 
     @SuppressWarnings("OverlyComplexBooleanExpression")
