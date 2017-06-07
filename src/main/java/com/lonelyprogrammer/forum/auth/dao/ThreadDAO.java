@@ -57,7 +57,7 @@ public class ThreadDAO {
                 .append("UPDATE threads SET slug = ? WHERE id = ? ;")
                 .toString();
         String subQuery = new StringBuilder()
-                .append("UPDATE forum SET threads = threads + 1 ")
+                .append("UPDATE forums SET threads = threads + 1 ")
                 .append("WHERE slug = ? ;")
                 .toString();
 

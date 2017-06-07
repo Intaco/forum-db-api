@@ -1,6 +1,5 @@
 package com.lonelyprogrammer.forum.auth.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +16,14 @@ public class DatabaseCreatorDAO {
         this.db = template;
     }
     public void reset(){
+        clearPosts();
         clearThreads();
         clearForums();
         clearUsers();
         createUsers();
         createForums();
         createThreads();
+        createPosts();
     }
     private void clearUsers(){
         final String sql = "DROP TABLE IF EXISTS users CASCADE;";
@@ -62,6 +63,26 @@ public class DatabaseCreatorDAO {
                 " FOREIGN KEY (author) REFERENCES users(nickname), FOREIGN KEY (forum) REFERENCES forums(slug)); "
                 + "CREATE UNIQUE INDEX ON threads (id); " + "CREATE UNIQUE INDEX ON threads (slug); "
                 + "CREATE INDEX ON threads (author); " + "CREATE INDEX ON threads (forum); ";
+        db.execute(sql);
+    }
+    private void createPosts(){
+        final String sql = "CREATE TABLE IF NOT EXISTS posts (" +
+                "id SERIAL PRIMARY KEY," +
+                "parent BIGINT NOT NULL DEFAULT 0," +
+                "author CITEXT NOT NULL," +
+                "message TEXT NOT NULL," +
+                "isEdited BOOLEAN NOT NULL DEFAULT false," +
+                "forum CITEXT NOT NULL," +
+                "thread_id BIGINT NOT NULL," +
+                "created TIMESTAMP NOT NULL DEFAULT current_timestamp," +
+                "post_path INTEGER[]," +
+                "FOREIGN KEY (author) REFERENCES users(nickname)," +
+                "FOREIGN KEY (forum) REFERENCES forums(slug)," +
+                "FOREIGN KEY (thread_id) REFERENCES threads(id));";
+        db.execute(sql);
+    }
+    private void clearPosts(){
+        final String sql = "drop table if exists posts cascade;";
         db.execute(sql);
     }
 }
