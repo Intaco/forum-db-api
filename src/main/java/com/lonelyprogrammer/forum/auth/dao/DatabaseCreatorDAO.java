@@ -16,6 +16,7 @@ public class DatabaseCreatorDAO {
         this.db = template;
     }
     public void reset(){
+        clearVotes();
         clearPosts();
         clearThreads();
         clearForums();
@@ -24,6 +25,7 @@ public class DatabaseCreatorDAO {
         createForums();
         createThreads();
         createPosts();
+        createVotes();
     }
     private void clearUsers(){
         final String sql = "DROP TABLE IF EXISTS users CASCADE;";
@@ -83,6 +85,17 @@ public class DatabaseCreatorDAO {
     }
     private void clearPosts(){
         final String sql = "drop table if exists posts cascade;";
+        db.execute(sql);
+    }
+    private void createVotes(){
+        String sql = "CREATE TABLE IF NOT EXISTS votes (author CITEXT NOT NULL," +
+                "  thread_id BIGINT NOT NULL, voice INT NOT NULL," +
+                "  FOREIGN KEY (author) REFERENCES users(nickname) ON DELETE CASCADE," +
+                "  FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE, UNIQUE (author, thread_id));";
+        db.execute(sql);
+    }
+    private void clearVotes(){
+        final String sql = "drop table if exists votes cascade;";
         db.execute(sql);
     }
 }

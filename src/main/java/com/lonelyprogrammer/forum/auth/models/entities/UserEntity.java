@@ -20,6 +20,9 @@ public class UserEntity {
         this.email = email;
         this.fullname = fullName;
     }
+    public String getEmail() {
+        return email;
+    }
 
     public String getNickname() {
         return nickname;
@@ -27,10 +30,6 @@ public class UserEntity {
 
     public String getAbout() {
         return about;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public String getFullName() {

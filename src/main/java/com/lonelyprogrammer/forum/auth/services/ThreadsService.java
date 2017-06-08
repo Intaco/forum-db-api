@@ -38,4 +38,12 @@ public class ThreadsService {
 
     }
 
+    public boolean exists(Integer id){
+        return threadDAO.getById(id)!=null;
+    }
+
+    public boolean exists(String slug){
+        return threadDAO.getBySlug(slug)!=null;
+    }
+
 }

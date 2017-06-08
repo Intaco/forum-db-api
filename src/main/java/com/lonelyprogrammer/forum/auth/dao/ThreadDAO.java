@@ -131,4 +131,8 @@ public class ThreadDAO {
         }
         return threads;
     }
+    public void updateVotesForThread(ForumThreadEntity thread){
+        final String sql = "UPDATE threads SET votes = (SELECT SUM(voice) FROM votes WHERE (thread_id) = ?) WHERE id = ?";
+        db.update(sql, thread.getId(), thread.getId());
+    }
 }

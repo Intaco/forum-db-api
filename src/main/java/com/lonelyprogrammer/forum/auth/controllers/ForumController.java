@@ -67,7 +67,7 @@ public class ForumController {
         try{
             created = forumsService.createThread(data);
         } catch (DuplicateKeyException e){
-            ForumThreadEntity loaded = forumsService.loadForumThread(data.getSlug());
+            final ForumThreadEntity loaded = forumsService.loadForumThread(data.getSlug());
             return ResponseEntity.status(CONFLICT).body(loaded);
         } catch (DataIntegrityViolationException e){
             return ResponseEntity.status(NOT_FOUND).build();
