@@ -52,6 +52,15 @@ public class ThreadsController {
 
         return ResponseEntity.status(CREATED).body(posts);
     }
+    @GetMapping(path = "/{slugOrId}/details")
+    public ResponseEntity getThreadDetails(@PathVariable(name = "slugOrId") String slugOrId) {
+        final ForumThreadEntity loaded;
+        if (isNumeric(slugOrId)) {
+            final Integer id = Integer.parseInt(slugOrId);
+            loaded = threadsService.get(id);
+        } else loaded = threadsService.get(slugOrId); //as slug
+        return loaded == null ? ResponseEntity.status(NOT_FOUND).build(): ResponseEntity.ok(loaded);
+    }
 
     @RequestMapping(path = "/{slugOrId}/vote", method = RequestMethod.POST)
     public ResponseEntity createVote(@PathVariable(name = "slugOrId") String slugOrId, @RequestBody VoteEntity vote) {
