@@ -57,11 +57,9 @@ public class ForumsService {
         }
         return HttpStatus.CREATED;
     }
-
+    @Nullable
     public ForumThreadEntity createThread(ForumThreadEntity data) {
-        ForumThreadEntity added = threadDAO.add(data);
-
-        return added;
+        return threadDAO.add(data);
     }
 
     @Nullable

@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 public class ForumThreadEntity {
     protected final String author;
     protected final String created;
-    protected final String forum;
+    protected String forum;
     protected Integer id;
     protected final String message;
     protected String slug;
@@ -69,4 +69,9 @@ public class ForumThreadEntity {
     public void setSlug(String slug) {
         this.slug = slug;
     }
+
+    public void setForum(String forum) {this.forum = forum;
+    }
+
+
 }

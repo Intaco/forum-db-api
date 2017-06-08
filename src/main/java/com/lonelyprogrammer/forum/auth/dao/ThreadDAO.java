@@ -3,7 +3,11 @@ package com.lonelyprogrammer.forum.auth.dao;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -25,7 +29,7 @@ import java.util.Map;
 @Service
 @Transactional
 public class ThreadDAO {
-
+    private static Logger logger = LoggerFactory.getLogger(ThreadDAO.class);
     private final JdbcTemplate db;
 
     public ThreadDAO(JdbcTemplate template) {
@@ -62,25 +66,19 @@ public class ThreadDAO {
                 .toString();
 
         ForumThreadEntity newThread = null;
-        try {
+        int id = db.queryForObject(query, Integer.class, thread.getTitle(), thread.getAuthor(), thread.getForum(), thread.getMessage());
+        db.update(subQuery, thread.getForum());
 
-            int id = db.queryForObject(query, Integer.class, thread.getTitle(), thread.getAuthor(), thread.getForum(), thread.getMessage());
-            db.update(subQuery, thread.getForum());
-
-            if (thread.getCreated() != null) {
-                String st = ZonedDateTime.parse(thread.getCreated()).format(DateTimeFormatter.ISO_INSTANT);
-                db.update(createdQuery, new Timestamp(ZonedDateTime.parse(st).toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli()), id);
-            }
-
-            if (thread.getSlug() != null) {
-                db.update(slugQuery, thread.getSlug(), id);
-            }
-
-            newThread = getById(id);
-        } catch (DataAccessException e) {
-            System.out.println(e.getMessage());
-            return null;
+        if (thread.getCreated() != null) {
+            String st = ZonedDateTime.parse(thread.getCreated()).format(DateTimeFormatter.ISO_INSTANT);
+            db.update(createdQuery, new Timestamp(ZonedDateTime.parse(st).toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli()), id);
         }
+
+        if (thread.getSlug() != null) {
+            db.update(slugQuery, thread.getSlug(), id);
+        }
+
+        newThread = getById(id);
 
         return newThread;
     }
@@ -113,7 +111,7 @@ public class ThreadDAO {
     @Nullable
     public List<ForumThreadEntity> getByForum(String slug, Integer limit, @Nullable Timestamp time, boolean desc) {
         final StringBuilder builder = new StringBuilder(String.format("SELECT * FROM threads WHERE forum = '%s' ", slug));
-        if (time != null){
+        if (time != null) {
             if (desc) builder.append(String.format("AND created <= '%s'", time));
             else builder.append(String.format("AND created >= '%s'", time));
         }
