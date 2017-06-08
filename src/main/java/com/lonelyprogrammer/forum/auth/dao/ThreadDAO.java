@@ -36,7 +36,7 @@ public class ThreadDAO {
         this.db = template;
     }
 
-    private final RowMapper<ForumThreadEntity> threadMapper = (resultSet, rowNum) -> {
+    private static final RowMapper<ForumThreadEntity> threadMapper = (resultSet, rowNum) -> {
         final int id = resultSet.getInt("id");
         final String slug = resultSet.getString("slug");
         final String message = resultSet.getString("message");

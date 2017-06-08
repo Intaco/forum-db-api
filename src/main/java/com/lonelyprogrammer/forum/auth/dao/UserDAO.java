@@ -79,7 +79,7 @@ public class UserDAO {
         db.execute(sql);
     }
 
-    private final RowMapper<UserEntity> userMapper = (resultSet, rowNum) -> {
+    private static final RowMapper<UserEntity> userMapper = (resultSet, rowNum) -> {
         final String nickname = resultSet.getString("nickname");
         final String about = resultSet.getString("about");
         final String email = resultSet.getString("email");

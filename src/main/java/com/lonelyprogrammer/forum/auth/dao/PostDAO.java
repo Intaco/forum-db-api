@@ -3,6 +3,7 @@ package com.lonelyprogrammer.forum.auth.dao;
 import com.lonelyprogrammer.forum.auth.controllers.UserController;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.PostsAnswerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -71,8 +73,35 @@ public class PostDAO {
             logger.error("2 error: ", e.getNextException());
         }
     }
+    public List<PostEntity> getPostsFlat(Integer id, Integer limit, Integer offset, boolean desc){
+        final String descOrAsc = (desc ? "DESC " : "ASC ");
+        final String sql = "SELECT * FROM posts WHERE thread_id = ? ORDER BY created " + descOrAsc + ", id "+ descOrAsc +"LIMIT ? OFFSET ?;";
+        final List<PostEntity> loadedPosts = db.query(sql, postMapper, id, limit, offset);
 
-    private final RowMapper<PostEntity> postMapper = (rs, num) -> {
+        return loadedPosts;
+
+    }
+    public List<PostEntity> getPostsTree(Integer id, Integer limit, Integer offset, boolean desc){
+        final String sql = "SELECT * FROM posts WHERE thread_id = ? ORDER BY post_path " + (desc? "DESC ": "ASC ") + "LIMIT ? OFFSET ?;";
+        final List<PostEntity> loadedPosts = db.query(sql, postMapper, id, limit, offset);
+
+        return loadedPosts;
+    }
+    public List<PostEntity> getPostsParentTree(Integer id, boolean desc,Integer offset, List<Integer> parentIds){
+        final String descOrAsc = (desc ? "DESC " : "ASC ");
+        final String sql = "SELECT * FROM posts WHERE thread_id  = ? AND post_path[1] = ? ORDER BY post_path " + descOrAsc +" , id " + descOrAsc +" OFFSET ? ;";
+        final List<PostEntity> loadedPosts = new ArrayList<>();
+        for(Integer parent: parentIds){
+            loadedPosts.addAll(db.query(sql,postMapper,id,parent, offset));
+        }
+
+        return loadedPosts;
+    }
+    public List<Integer> getParentIds(Integer id, Integer limit, boolean desc){
+        final String sql = "SELECT id from posts where parent = 0 AND thread_id = ? ORDER BY id "+ (desc ? "DESC " : "ASC ") + " LIMIT ?;";
+        return db.query(sql, parentMapper, id, limit);
+    }
+    private static final RowMapper<PostEntity> postMapper = (rs, num) -> {
         final int id = rs.getInt("id");
         final String created = rs.getTimestamp("created").toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         final int parent = rs.getInt("parent");
@@ -83,4 +112,5 @@ public class PostDAO {
         final int thread = rs.getInt("thread_id");
         return new PostEntity(id, created, parent, message, author, forum, isEdited, thread);
     };
+    private static final RowMapper<Integer> parentMapper = (rs, num) -> rs.getInt("id");
 }

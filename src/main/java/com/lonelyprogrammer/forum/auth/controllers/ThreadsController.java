@@ -61,6 +61,20 @@ public class ThreadsController {
         } else loaded = threadsService.get(slugOrId); //as slug
         return loaded == null ? ResponseEntity.status(NOT_FOUND).build(): ResponseEntity.ok(loaded);
     }
+    @GetMapping(path = "/{slugOrId}/posts")
+    public ResponseEntity getThreadPosts(@PathVariable(name = "slugOrId") final String slugOrId,
+                                    @RequestParam(name = "limit", required = false, defaultValue = "0") final Integer limit,
+                                    @RequestParam(name = "marker", required = false, defaultValue = "0") final Integer marker,
+                                    @RequestParam(name = "sort", required = false, defaultValue = "flat") final String sort,
+                                    @RequestParam(name = "desc", required = false, defaultValue = "false") final Boolean desc) {
+
+        final ForumThreadEntity loaded;
+        if (isNumeric(slugOrId)) {
+            final Integer id = Integer.parseInt(slugOrId);
+            loaded = threadsService.get(id);
+        } else loaded = threadsService.get(slugOrId); //as slug
+        return loaded == null ? ResponseEntity.status(NOT_FOUND).build(): ResponseEntity.ok(postsService.getPostsForThread(loaded.getId(), limit, marker, sort, desc));
+    }
 
     @RequestMapping(path = "/{slugOrId}/vote", method = RequestMethod.POST)
     public ResponseEntity createVote(@PathVariable(name = "slugOrId") String slugOrId, @RequestBody VoteEntity vote) {
@@ -83,7 +97,7 @@ public class ThreadsController {
     }
 
 
-    private boolean isNumeric(String slugOrId) {
+    public static boolean isNumeric(String slugOrId) {
         return slugOrId.matches("\\d+");
     }
 

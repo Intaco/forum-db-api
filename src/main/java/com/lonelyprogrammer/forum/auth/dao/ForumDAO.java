@@ -39,7 +39,7 @@ public class ForumDAO {
     }
 
 
-    private final RowMapper<ForumEntity> forumMapper = (resultSet, rowNum) -> {
+    private static final RowMapper<ForumEntity> forumMapper = (resultSet, rowNum) -> {
 
         final String title = resultSet.getString("title");
         final String user = resultSet.getString("admin");
