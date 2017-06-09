@@ -61,6 +61,17 @@ public class ThreadsController {
         } else loaded = threadsService.get(slugOrId); //as slug
         return loaded == null ? ResponseEntity.status(NOT_FOUND).build(): ResponseEntity.ok(loaded);
     }
+    @PostMapping(path = "/{slugOrId}/details")
+    public ResponseEntity updateThreadDetails(@PathVariable(name = "slugOrId") String slugOrId, @RequestBody ForumThreadEntity data) {
+        final ForumThreadEntity loaded;
+        if (isNumeric(slugOrId)) {
+            final Integer id = Integer.parseInt(slugOrId);
+            loaded = threadsService.get(id);
+        } else loaded = threadsService.get(slugOrId); //as slug
+        if (loaded == null) return ResponseEntity.status(NOT_FOUND).build();
+        threadsService.updateThread(data, loaded);
+        return ResponseEntity.ok(loaded);
+    }
     @GetMapping(path = "/{slugOrId}/posts")
     public ResponseEntity getThreadPosts(@PathVariable(name = "slugOrId") final String slugOrId,
                                     @RequestParam(name = "limit", required = false, defaultValue = "0") final Integer limit,

@@ -69,6 +69,10 @@ public class PostDAO {
             logger.error("1 error: ", e);
             logger.error("2 error: ", e.getNextException());
         }
+        ///////////////////////////////////
+        final String forumUpdateSql = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
+        db.update(forumUpdateSql, posts.size(), thread.getForum());
+        ///////////////////////////////////
     }
 
     public List<PostEntity> getPostsFlat(Integer id, Integer limit, Integer offset, boolean desc) {

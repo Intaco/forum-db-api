@@ -131,7 +131,34 @@ public class ThreadDAO {
         }
         return threads;
     }
-    public void updateVotesForThread(ForumThreadEntity thread){
+
+    /**
+     * @param newData info for updating in oldData
+     * @param oldData old data object, IS UPDATED AND LATER USED
+     */
+    public void updateThread(ForumThreadEntity newData, ForumThreadEntity oldData) {
+        final StringBuilder sql = new StringBuilder("UPDATE threads SET ");
+        final List<Object> args = new ArrayList<>();
+        if (newData.getTitle() != null) {
+            sql.append("title = ?,");
+            args.add(newData.getTitle());
+            oldData.setTitle(newData.getTitle());
+        }
+        if (newData.getMessage() != null) {
+            sql.append(" message = ?,");
+            args.add(newData.getMessage());
+            oldData.setMessage(newData.getMessage());
+        }
+        if (args.isEmpty()) {
+            return;
+        }
+        sql.deleteCharAt(sql.length() - 1);
+        sql.append(" WHERE id = ?;");
+        args.add(oldData.getId());
+        db.update(sql.toString(), args.toArray());
+    }
+
+    public void updateVotesForThread(ForumThreadEntity thread) {
         final String sql = "UPDATE threads SET votes = (SELECT SUM(voice) FROM votes WHERE (thread_id) = ?) WHERE id = ?";
         db.update(sql, thread.getId(), thread.getId());
     }

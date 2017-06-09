@@ -7,19 +7,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ForumEntity {
     protected final String title;
     protected String user;
-    @JsonIgnore
-    protected final Integer postsCount;
-    @JsonIgnore
-    protected final Integer threadsCount;
+    protected final Integer posts;
+    protected final Integer threads;
     protected final String slug;
 
     @JsonCreator
-    public ForumEntity(@JsonProperty("title") String title, @JsonProperty("user") String user, @JsonProperty("posts") Integer postsCount
-            ,@JsonProperty("threads") Integer threadsCount,@JsonProperty("slug") String slug) {
+    public ForumEntity(@JsonProperty("title") String title, @JsonProperty("user") String user, @JsonProperty("posts") Integer posts
+            ,@JsonProperty("threads") Integer threads ,@JsonProperty("slug") String slug) {
         this.title = title;
         this.user = user;
-        this.postsCount = postsCount;
-        this.threadsCount = threadsCount;
+        this.posts = posts;
+        this.threads = threads;
         this.slug = slug;
 
     }
@@ -32,12 +30,12 @@ public class ForumEntity {
         return user;
     }
 
-    public Integer getPostsCount() {
-        return postsCount;
+    public Integer getPosts() {
+        return posts;
     }
 
-    public Integer getThreadsCount() {
-        return threadsCount;
+    public Integer getThreads() {
+        return threads;
     }
 
     public String getSlug() {

@@ -37,13 +37,8 @@ public class ThreadsService {
         return threadDAO.getById(id);
 
     }
-
-    public boolean exists(Integer id){
-        return threadDAO.getById(id)!=null;
-    }
-
-    public boolean exists(String slug){
-        return threadDAO.getBySlug(slug)!=null;
+    public void updateThread(ForumThreadEntity newData, ForumThreadEntity oldData){
+        threadDAO.updateThread(newData, oldData);
     }
 
 }

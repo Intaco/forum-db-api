@@ -7,14 +7,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.sql.Timestamp;
 
 public class ForumThreadEntity {
-    protected final String author;
-    protected final String created;
+    protected String author;
+    protected String created;
     protected String forum;
     protected Integer id;
-    protected final String message;
+    protected String message;
     protected String slug;
-    protected final String title;
-    protected final Integer votes;
+    protected String title;
+    protected Integer votes;
     @JsonCreator
     public ForumThreadEntity(@JsonProperty("author") String author, @JsonProperty("created") String created,
                              @JsonProperty("forum") String forum, @JsonProperty("id") Integer id, @JsonProperty("message") String message,
@@ -29,6 +29,7 @@ public class ForumThreadEntity {
         this.title = title;
         this.votes = votes;
     }
+
 
     public String getAuthor() {
         return author;
@@ -70,8 +71,13 @@ public class ForumThreadEntity {
         this.slug = slug;
     }
 
-    public void setForum(String forum) {this.forum = forum;
+    public void setForum(String forum) {this.forum = forum;}
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }

@@ -16,7 +16,6 @@ import java.sql.Timestamp;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,7 +80,7 @@ public class ForumsService {
     @SuppressWarnings("OverlyComplexBooleanExpression")
     public boolean forumsDifferExceptSlug(ForumEntity forum, ForumEntity data) {
         return (!forum.getTitle().equals(data.getTitle())
-                || !forum.getPostsCount().equals(data.getPostsCount()) || !forum.getThreadsCount().equals(data.getThreadsCount())
+                || !forum.getPosts().equals(data.getPosts()) || !forum.getThreads().equals(data.getThreads())
                 || !forum.getUser().equals(data.getUser()));
     }
 }
