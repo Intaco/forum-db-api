@@ -82,7 +82,7 @@ public class ThreadDAO {
 
         return newThread;
     }
-
+    @Nullable
     public ForumThreadEntity getById(int id) {
 
         ForumThreadEntity loaded = null;
