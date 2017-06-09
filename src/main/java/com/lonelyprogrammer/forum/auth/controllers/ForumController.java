@@ -1,7 +1,6 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
 
-import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
@@ -10,9 +9,6 @@ import com.lonelyprogrammer.forum.auth.services.ForumsService;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.springframework.http.HttpStatus.*;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -20,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping(value = "api/forum")

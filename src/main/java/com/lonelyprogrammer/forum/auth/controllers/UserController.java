@@ -1,7 +1,6 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
 import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
-import com.lonelyprogrammer.forum.auth.models.*;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import com.lonelyprogrammer.forum.auth.services.AccountService;
 import org.jetbrains.annotations.NotNull;
@@ -10,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import static org.springframework.http.HttpStatus.*;
-import javax.servlet.http.HttpSession;
 
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping(value = "api/user")

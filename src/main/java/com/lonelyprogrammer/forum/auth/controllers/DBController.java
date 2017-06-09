@@ -1,8 +1,6 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
 import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
-import com.lonelyprogrammer.forum.auth.services.AccountService;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;

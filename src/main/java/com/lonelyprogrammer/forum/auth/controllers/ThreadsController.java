@@ -3,20 +3,16 @@ package com.lonelyprogrammer.forum.auth.controllers;
 import com.lonelyprogrammer.forum.auth.dao.VoteDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
-import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.VoteEntity;
 import com.lonelyprogrammer.forum.auth.services.PostsService;
 import com.lonelyprogrammer.forum.auth.services.ThreadsService;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 /**
  * Created by nikita on 20.03.17.

@@ -1,8 +1,11 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
 import com.lonelyprogrammer.forum.auth.models.entities.PostDetailsEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.PostUpdateEntity;
 import com.lonelyprogrammer.forum.auth.services.PostsService;
 import org.jetbrains.annotations.NotNull;
+import static org.springframework.http.HttpStatus.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +22,7 @@ public class PostsController {
     private final PostsService postsService;
 
     @GetMapping(path = "/{id}/details")
-    public ResponseEntity getIdDetails(@PathVariable(name = "id") Integer id,
+    public ResponseEntity getPostDetails(@PathVariable(name = "id") int id,
                                        @RequestParam(name = "related", required = false) Set<String> related) {
         final PostDetailsEntity loaded = postsService.getPostDetails(id, related);
         if (loaded == null) {
@@ -27,6 +30,15 @@ public class PostsController {
         }
         return ResponseEntity.ok(loaded);
     }
+    @PostMapping(path = "/{id}/details")
+    public ResponseEntity updatePostDetails(@PathVariable(name = "id") int id,
+                                       @RequestBody PostUpdateEntity update) {
+        final PostEntity loaded = postsService.get(id);
+        if (loaded == null) return ResponseEntity.status(NOT_FOUND).build();
+        postsService.updatePost(loaded, update);
+        return ResponseEntity.ok(loaded);
+    }
+
 
 
     public PostsController(@NotNull PostsService postsService) {

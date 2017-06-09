@@ -4,10 +4,7 @@ import com.lonelyprogrammer.forum.auth.dao.ForumDAO;
 import com.lonelyprogrammer.forum.auth.dao.PostDAO;
 import com.lonelyprogrammer.forum.auth.dao.ThreadDAO;
 import com.lonelyprogrammer.forum.auth.dao.UserDAO;
-import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
-import com.lonelyprogrammer.forum.auth.models.entities.PostDetailsEntity;
-import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
-import com.lonelyprogrammer.forum.auth.models.entities.PostsAnswerEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -69,7 +66,7 @@ public class PostsService {
 
     @SuppressWarnings("OverlyComplexMethod")
     @Nullable
-    public PostDetailsEntity getPostDetails(Integer id, Set<String> related) {
+    public PostDetailsEntity getPostDetails(int id, Set<String> related) {
         final PostEntity loadedPost = postDAO.getById(id);
         if (loadedPost == null) return null;
         final PostDetailsEntity details = new PostDetailsEntity();
@@ -96,5 +93,18 @@ public class PostsService {
         details.setPost(loadedPost);
         return details;
 
+    }
+
+    @Nullable
+    public PostEntity get(int id) {
+        return postDAO.getById(id);
+    }
+
+    public void updatePost(PostEntity updatable, PostUpdateEntity update) {
+        final String newMessage = update.getMessage();
+        if (updatable.getMessage().equals(newMessage)) return;
+        updatable.setEdited(true);
+        updatable.setMessage(newMessage);
+        postDAO.updatePost(updatable);
     }
 }

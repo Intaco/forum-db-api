@@ -2,6 +2,7 @@ package com.lonelyprogrammer.forum.auth.dao;
 
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.PostUpdateEntity;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,7 +110,7 @@ public class PostDAO {
         return db.query(sql, parentMapper, id, limit, offset);
     }
     @Nullable
-    public PostEntity getById(Integer id){
+    public PostEntity getById(int id){
         try{
             final String sql = "SELECT * FROM posts WHERE id = ?;";
             return db.queryForObject(sql, postMapper, id);
@@ -117,6 +118,10 @@ public class PostDAO {
             e.printStackTrace();
             return null;
         }
+    }
+    public void updatePost(PostEntity post){
+        final String sql = "UPDATE posts SET message = ?, isEdited = TRUE WHERE id = ?;";
+        db.update(sql, post.getMessage(), post.getId());
     }
 
     private static final RowMapper<PostEntity> postMapper = (rs, num) -> {
