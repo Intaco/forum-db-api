@@ -108,7 +108,7 @@ public class ThreadDAO {
         return loaded;
     }
 
-    @Nullable
+    @NotNull
     public List<ForumThreadEntity> getByForum(String slug, Integer limit, @Nullable Timestamp time, boolean desc) {
         final StringBuilder builder = new StringBuilder(String.format("SELECT * FROM threads WHERE forum = '%s' ", slug));
         if (time != null) {
@@ -122,12 +122,11 @@ public class ThreadDAO {
         builder.append(String.format("LIMIT '%s';", limit));
         final String query = builder.toString();
 
-        List<ForumThreadEntity> threads = null;
+        List<ForumThreadEntity> threads = new ArrayList<>();
         try {
             threads = db.query(query, threadMapper);
         } catch (DataAccessException e) {
-            System.out.println(e.getMessage());
-            return null;
+            e.printStackTrace();
         }
         return threads;
     }

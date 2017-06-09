@@ -6,6 +6,7 @@ import com.lonelyprogrammer.forum.auth.dao.UserDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
+import com.lonelyprogrammer.forum.auth.utils.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.dao.DuplicateKeyException;
@@ -69,12 +70,7 @@ public class ForumsService {
 
     @NotNull
     public List<ForumThreadEntity> loadThreadsByForum(String forumSlug, Integer limit, String since, boolean desc) {
-        Timestamp sinceTime = null;
-        if (since != null) {
-            final String formatted = ZonedDateTime.parse(since).format(DateTimeFormatter.ISO_INSTANT);
-            sinceTime = new Timestamp(ZonedDateTime.parse(formatted).toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli());
-        }
-        return threadDAO.getByForum(forumSlug, limit, sinceTime, desc);
+        return threadDAO.getByForum(forumSlug, limit, TimeUtil.timestampFromString(since), desc);
     }
 
     @SuppressWarnings("OverlyComplexBooleanExpression")

@@ -2,6 +2,7 @@ package com.lonelyprogrammer.forum.auth.services;
 
 import com.lonelyprogrammer.forum.auth.dao.UserDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
+import com.lonelyprogrammer.forum.auth.utils.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.dao.DuplicateKeyException;
@@ -68,6 +69,9 @@ public class AccountService {
         return isEmpty(entity.getEmail()) && isEmpty(entity.getFullName()) && isEmpty(entity.getAbout());
     }
 
+    public List<UserEntity> loadForumUsers (String slug, Integer limit, String since, Boolean desc){
+        return userDAO.loadUsersByForum(slug, limit, TimeUtil.timestampFromString(since), desc);
+    }
 
     public AccountService(@NotNull UserDAO userDAO) {
         this.userDAO = userDAO;

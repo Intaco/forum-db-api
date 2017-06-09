@@ -4,6 +4,7 @@ package com.lonelyprogrammer.forum.auth.controllers;
 import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
+import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import com.lonelyprogrammer.forum.auth.services.AccountService;
 import com.lonelyprogrammer.forum.auth.services.ForumsService;
 import org.jetbrains.annotations.NotNull;
@@ -31,9 +32,22 @@ public class ForumController {
     @NotNull
     private final AccountService accountService;
 
+
+    @GetMapping(path = "/{slug}/users")
+    public ResponseEntity getUsersInfo(@PathVariable(name = "slug") final String slug,
+                                    @RequestParam(name = "limit", required = false) final Integer limit,
+                                    @RequestParam(name = "since", required = false) final String since,
+                                    @RequestParam(name = "desc", required = false) final Boolean desc) {
+        final ForumEntity loaded = forumsService.getBySlug(slug);
+        if (loaded == null) return ResponseEntity.status(NOT_FOUND).build();
+        final List<UserEntity> loadedUsers = accountService.loadForumUsers(slug, limit, since, desc);
+        return ResponseEntity.ok(loadedUsers);
+
+    }
+
     @RequestMapping(path = "/create", method = RequestMethod.POST)
     public ResponseEntity createForum(@RequestBody ForumEntity data) {
-        logger.debug("/forum create called with slug: {}", data.getSlug());
+        /*logger.debug("/forum create called with slug: {}", data.getSlug());*/
         final HttpStatus status = forumsService.createForum(data);
 
         if (status == NOT_FOUND) {
@@ -47,7 +61,7 @@ public class ForumController {
 
     @RequestMapping(path = "/{slug}/details", method = RequestMethod.GET)
     public ResponseEntity getDetails(@PathVariable(name = "slug") String slug) {
-        logger.debug("/forum details called with slug: {}", slug);
+       /* logger.debug("/forum details called with slug: {}", slug);*/
         final ForumEntity loaded = forumsService.getBySlug(slug);
         if (loaded == null) {
             return ResponseEntity.status(NOT_FOUND).build();
@@ -57,7 +71,7 @@ public class ForumController {
 
     @RequestMapping(path = "/{slug}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity createThread(@PathVariable(name = "slug") String slug, @RequestBody ForumThreadEntity data) {
-        logger.debug("/forum threads create called with slug: {}", slug);
+        /*logger.debug("/forum threads create called with slug: {}", slug);*/
         final ForumEntity loadedForum = forumsService.getBySlug(slug);
         if (loadedForum == null){
             return ResponseEntity.status(NOT_FOUND).build();
@@ -83,7 +97,7 @@ public class ForumController {
     public ResponseEntity getThreads(@PathVariable(name = "slug") String slug, @RequestParam(name = "limit", required = false) Integer limit,
                                      @RequestParam(name = "since", required = false) String since,
                                      @RequestParam(name = "desc", required = false) Boolean desc) {
-        logger.debug("/forum threads info called with slug: {}", slug);
+       /* logger.debug("/forum threads info called with slug: {}", slug);*/
         if (desc == null) {
             desc = false;
         }

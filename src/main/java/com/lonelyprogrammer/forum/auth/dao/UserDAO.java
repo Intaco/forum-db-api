@@ -1,4 +1,5 @@
 package com.lonelyprogrammer.forum.auth.dao;
+
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,6 +10,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,14 +29,16 @@ public class UserDAO {
         final String sql = "INSERT INTO users(nickname, fullname, about, email) VALUES(?,?,?,?);";
         db.update(sql, user.getNickname(), user.getFullName(), user.getAbout(), user.getEmail());
     }
+
     @NotNull
-    public List<UserEntity> getSimilarUsers(UserEntity entity){
+    public List<UserEntity> getSimilarUsers(UserEntity entity) {
         final String sql = String.format("SELECT * FROM users WHERE nickname = '%s' OR email = '%s';",
                 entity.getNickname(), entity.getEmail());
         return db.query(sql, userMapper);
     }
+
     @Nullable
-    public UserEntity getByNickname(String nickName){
+    public UserEntity getByNickname(String nickName) {
         UserEntity loaded = null;
         try {
             final String sql = String.format("SELECT * FROM users WHERE nickname = '%s';", nickName);
@@ -44,8 +48,9 @@ public class UserDAO {
         }
         return loaded;
     }
+
     @Nullable
-    public UserEntity getByEmail(String email){
+    public UserEntity getByEmail(String email) {
         UserEntity loaded = null;
         try {
             final String sql = String.format("SELECT * FROM users WHERE email = '%s';", email);
@@ -55,19 +60,20 @@ public class UserDAO {
         }
         return loaded;
     }
-    public void updateUser(UserEntity entity){
+
+    public void updateUser(UserEntity entity) {
         final String nickname = entity.getNickname();
-        final String fullname = entity.getFullName() ;
+        final String fullname = entity.getFullName();
         final String about = entity.getAbout();
         final String email = entity.getEmail();
         final StringBuilder builder = new StringBuilder("UPDATE users SET ");
-        if (fullname != null){
+        if (fullname != null) {
             builder.append(String.format("fullname = '%s',", fullname));
         }
-        if (about != null){
+        if (about != null) {
             builder.append(String.format("about = '%s',", about));
         }
-        if (email != null){
+        if (email != null) {
             builder.append(String.format("email = '%s',", email));
         }
         final int commaIndex = builder.lastIndexOf(",");
@@ -77,6 +83,11 @@ public class UserDAO {
         builder.append(String.format(" WHERE nickname = '%s'", nickname));
         final String sql = builder.toString();
         db.execute(sql);
+    }
+
+    public List<UserEntity> loadUsersByForum(String slug, Integer limit, @Nullable Timestamp since, Boolean desc) {
+        final StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE id IN (SELECT id FROM forum_users WHERE forum_id = ?) ");
+        return null; //TODO
     }
 
     private static final RowMapper<UserEntity> userMapper = (resultSet, rowNum) -> {
