@@ -1,9 +1,7 @@
 package com.lonelyprogrammer.forum.auth.dao;
 
-import com.lonelyprogrammer.forum.auth.controllers.UserController;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
-import com.lonelyprogrammer.forum.auth.models.entities.PostsAnswerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,13 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * Created by nikita on 27.05.17.
@@ -28,6 +24,7 @@ import java.util.TimeZone;
 public class PostDAO {
     private final JdbcTemplate db;
     private static Logger logger = LoggerFactory.getLogger(PostDAO.class);
+
     public PostDAO(JdbcTemplate db) {
         this.db = db;
     }
@@ -37,22 +34,22 @@ public class PostDAO {
         return db.queryForList(sql, Integer.class, threadId);
     }
 
-    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread){
+    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) {
         final String sql = "INSERT INTO posts(parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,array_append((SELECT post_path FROM posts WHERE id = ?), currval('posts_id_seq')::INT));";
-        try(Connection connection = db.getDataSource().getConnection()) {
+        try (Connection connection = db.getDataSource().getConnection()) {
             final PreparedStatement prepStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             final String timeStr = timestamp.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            for (PostEntity post: posts){
+            for (PostEntity post : posts) {
 
                 prepStatement.setInt(1, post.getParent());
                 prepStatement.setString(2, post.getAuthor());
                 prepStatement.setString(3, post.getMessage());
                 prepStatement.setInt(4, thread.getId());
                 prepStatement.setString(5, thread.getForum());
-                if(post.getCreated()!=null) {
+                if (post.getCreated() != null) {
                     prepStatement.setTimestamp(6, new Timestamp(ZonedDateTime.parse(post.getCreated()).toInstant().toEpochMilli()));
-                } else{
+                } else {
                     post.setCreated(timeStr);
                     prepStatement.setTimestamp(6, timestamp);
                 }
@@ -68,39 +65,44 @@ public class PostDAO {
             for (int i = 0; rs.next(); i++)
                 posts.get(i).setId(rs.getInt(1));
             prepStatement.close();
-        } catch (SQLException e){
-            logger.error("1 error: ",e);
+        } catch (SQLException e) {
+            logger.error("1 error: ", e);
             logger.error("2 error: ", e.getNextException());
         }
     }
-    public List<PostEntity> getPostsFlat(Integer id, Integer limit, Integer offset, boolean desc){
+
+    public List<PostEntity> getPostsFlat(Integer id, Integer limit, Integer offset, boolean desc) {
         final String descOrAsc = (desc ? "DESC " : "ASC ");
-        final String sql = "SELECT * FROM posts WHERE thread_id = ? ORDER BY created " + descOrAsc + ", id "+ descOrAsc +"LIMIT ? OFFSET ?;";
+        final String sql = "SELECT * FROM posts WHERE thread_id = ? ORDER BY created " + descOrAsc + ", id " + descOrAsc + "LIMIT ? OFFSET ?;";
         final List<PostEntity> loadedPosts = db.query(sql, postMapper, id, limit, offset);
 
         return loadedPosts;
 
     }
-    public List<PostEntity> getPostsTree(Integer id, Integer limit, Integer offset, boolean desc){
-        final String sql = "SELECT * FROM posts WHERE thread_id = ? ORDER BY post_path " + (desc? "DESC ": "ASC ") + "LIMIT ? OFFSET ?;";
+
+    public List<PostEntity> getPostsTree(Integer id, Integer limit, Integer offset, boolean desc) {
+        final String sql = "SELECT * FROM posts WHERE thread_id = ? ORDER BY post_path " + (desc ? "DESC " : "ASC ") + "LIMIT ? OFFSET ?;";
         final List<PostEntity> loadedPosts = db.query(sql, postMapper, id, limit, offset);
 
         return loadedPosts;
     }
-    public List<PostEntity> getPostsParentTree(Integer id, boolean desc,Integer offset, List<Integer> parentIds){
+
+    public List<PostEntity> getPostsParentTree(Integer id, boolean desc, List<Integer> parentIds) {
         final String descOrAsc = (desc ? "DESC " : "ASC ");
-        final String sql = "SELECT * FROM posts WHERE thread_id  = ? AND post_path[1] = ? ORDER BY post_path " + descOrAsc +" , id " + descOrAsc +" OFFSET ? ;";
+        final String sql = "SELECT * FROM posts WHERE thread_id  = ? AND post_path[1] = ? ORDER BY post_path " + descOrAsc + " , id " + descOrAsc + ";";
         final List<PostEntity> loadedPosts = new ArrayList<>();
-        for(Integer parent: parentIds){
-            loadedPosts.addAll(db.query(sql,postMapper,id,parent, offset));
+        for (Integer parent : parentIds) {
+            loadedPosts.addAll(db.query(sql, postMapper, id, parent));
         }
 
         return loadedPosts;
     }
-    public List<Integer> getParentIds(Integer id, Integer limit, boolean desc){
-        final String sql = "SELECT id from posts where parent = 0 AND thread_id = ? ORDER BY id "+ (desc ? "DESC " : "ASC ") + " LIMIT ?;";
-        return db.query(sql, parentMapper, id, limit);
+
+    public List<Integer> getParentIds(Integer id, Integer limit, boolean desc, Integer offset) {
+        final String sql = "SELECT id from posts where parent = 0 AND thread_id = ? ORDER BY id " + (desc ? "DESC " : "ASC ") + " LIMIT ? OFFSET ?;";
+        return db.query(sql, parentMapper, id, limit, offset);
     }
+
     private static final RowMapper<PostEntity> postMapper = (rs, num) -> {
         final int id = rs.getInt("id");
         final String created = rs.getTimestamp("created").toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
