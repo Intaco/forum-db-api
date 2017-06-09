@@ -107,6 +107,10 @@ public class ThreadDAO {
         }
         return loaded;
     }
+    public int getCount(){
+        final String sql = "SELECT COUNT(id) FROM threads ;";
+        return db.queryForObject(sql, Integer.class);
+    }
 
     @NotNull
     public List<ForumThreadEntity> getByForum(String slug, Integer limit, @Nullable Timestamp time, boolean desc) {

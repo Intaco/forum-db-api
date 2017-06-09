@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +36,7 @@ public class PostsService {
         return postDAO.getThreadChildren(threadEntity.getId());
     }
 
-    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) {
+    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) throws SQLException{
         postDAO.createPosts(posts, thread);
     }
 
@@ -102,7 +103,7 @@ public class PostsService {
 
     public void updatePost(PostEntity updatable, PostUpdateEntity update) {
         final String newMessage = update.getMessage();
-        if (updatable.getMessage().equals(newMessage)) return;
+        if (update.getMessage() == null || updatable.getMessage().equals(newMessage)) return; // ?????
         updatable.setEdited(true);
         updatable.setMessage(newMessage);
         postDAO.updatePost(updatable);

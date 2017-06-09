@@ -1,6 +1,6 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
-import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
+import com.lonelyprogrammer.forum.auth.dao.DBDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import com.lonelyprogrammer.forum.auth.services.AccountService;
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +55,7 @@ public class UserController {
         return ResponseEntity.ok(accountService.loadProfile(nickname));
     }
 
-    public UserController(@NotNull AccountService accountService, @NotNull DatabaseCreatorDAO databaseCreatorDAO) {
+    public UserController(@NotNull AccountService accountService) {
         this.accountService = accountService;
     }
 }

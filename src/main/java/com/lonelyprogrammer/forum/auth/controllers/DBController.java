@@ -1,7 +1,7 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
-import com.lonelyprogrammer.forum.auth.dao.DatabaseCreatorDAO;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.lonelyprogrammer.forum.auth.dao.*;
+import com.lonelyprogrammer.forum.auth.models.entities.StatusEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,14 +17,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 public class DBController {
 
-    private final DatabaseCreatorDAO databaseCreatorDAO;
-    @Autowired
-    public DBController(DatabaseCreatorDAO databaseCreatorDAO) {
-        this.databaseCreatorDAO = databaseCreatorDAO;
+    private final DBDAO DBDAO;
+    private final UserDAO userDAO;
+    private final ForumDAO forumDAO;
+    private final ThreadDAO threadDAO;
+    private final PostDAO postDAO;
+
+    public DBController(DBDAO DBDAO, UserDAO userDAO, ForumDAO forumDAO, ThreadDAO threadDAO, PostDAO postDAO) {
+        this.DBDAO = DBDAO;
+        this.userDAO = userDAO;
+        this.forumDAO = forumDAO;
+        this.threadDAO = threadDAO;
+        this.postDAO = postDAO;
     }
-    @RequestMapping(path = "/clear", method = RequestMethod.GET)
-    public ResponseEntity clear(){
-        databaseCreatorDAO.reset();
+
+    @RequestMapping(path = "/clear", method = RequestMethod.POST)
+    public ResponseEntity clear() {
+        DBDAO.reset();
         return ResponseEntity.ok("DB cleared");
+    }
+
+    @RequestMapping(path = "/status", method = RequestMethod.GET)
+    public ResponseEntity status() {
+        final StatusEntity status = new StatusEntity();
+        status.setForum(forumDAO.getCount());
+        status.setPost(postDAO.getCount());
+        status.setThread(threadDAO.getCount());
+        status.setUser(userDAO.getCount());
+        return ResponseEntity.ok(status);
     }
 }

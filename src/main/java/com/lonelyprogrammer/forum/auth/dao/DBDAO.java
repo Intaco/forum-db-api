@@ -1,5 +1,6 @@
 package com.lonelyprogrammer.forum.auth.dao;
 
+import com.lonelyprogrammer.forum.auth.models.entities.StatusEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
-public class DatabaseCreatorDAO {
+public class DBDAO {
     private final JdbcTemplate db;
 
-    public DatabaseCreatorDAO(JdbcTemplate template) {
+    public DBDAO(JdbcTemplate template) {
         this.db = template;
     }
     public void reset(){

@@ -37,6 +37,10 @@ public class ForumDAO {
         }
         catch (DataAccessException e){}
     }
+    public int getCount(){
+        final String sql = "SELECT COUNT(slug) FROM forums ;";
+        return db.queryForObject(sql, Integer.class);
+    }
 
 
     private static final RowMapper<ForumEntity> forumMapper = (resultSet, rowNum) -> {

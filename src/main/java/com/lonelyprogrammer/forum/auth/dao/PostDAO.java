@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class PostDAO {
         return db.queryForList(sql, Integer.class, threadId);
     }
 
-    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) {
+    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) throws SQLException{
         final String sql = "INSERT INTO posts(parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,array_append((SELECT post_path FROM posts WHERE id = ?), currval('posts_id_seq')::INT));";
         try (Connection connection = db.getDataSource().getConnection()) {
             final PreparedStatement prepStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -71,6 +72,7 @@ public class PostDAO {
         } catch (SQLException e) {
             logger.error("1 error: ", e);
             logger.error("2 error: ", e.getNextException());
+            throw e;
         }
         ///////////////////////////////////
         final String forumUpdateSql = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
@@ -114,10 +116,14 @@ public class PostDAO {
         try{
             final String sql = "SELECT * FROM posts WHERE id = ?;";
             return db.queryForObject(sql, postMapper, id);
-        } catch (DataAccessException e){
-            e.printStackTrace();
+        } catch (Exception e){
+            //e.printStackTrace();
             return null;
         }
+    }
+    public int getCount(){
+        final String sql = "SELECT COUNT(id) FROM posts ;";
+        return db.queryForObject(sql, Integer.class);
     }
     public void updatePost(PostEntity post){
         final String sql = "UPDATE posts SET message = ?, isEdited = TRUE WHERE id = ?;";

@@ -105,6 +105,10 @@ public class UserDAO {
         sql.append(';');
         return db.query(sql.toString(), userMapper, args.toArray());
     }
+    public int getCount(){
+        final String sql = "SELECT COUNT(nickname) FROM users ;";
+        return db.queryForObject(sql, Integer.class);
+    }
 
     private static final RowMapper<UserEntity> userMapper = (resultSet, rowNum) -> {
         final String nickname = resultSet.getString("nickname");
