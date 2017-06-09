@@ -78,16 +78,32 @@ public class UserDAO {
         }
         final int commaIndex = builder.lastIndexOf(",");
         if (commaIndex != -1) {
-            builder.replace(commaIndex, commaIndex + 1, "");
+            builder.replace(commaIndex, commaIndex + 1, "");//TODO REFACTOR
         }
         builder.append(String.format(" WHERE nickname = '%s'", nickname));
         final String sql = builder.toString();
         db.execute(sql);
     }
 
-    public List<UserEntity> loadUsersByForum(String slug, Integer limit, @Nullable Timestamp since, Boolean desc) {
-        final StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE id IN (SELECT id FROM forum_users WHERE forum_id = ?) ");
-        return null; //TODO
+    public List<UserEntity> loadUsersByForum(String slug, Integer limit, @Nullable String since, boolean desc) {
+        final StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE nickname IN (SELECT author FROM forum_users WHERE LOWER(forum) = LOWER(?)) ");
+        final List<Object> args = new ArrayList<>();
+        args.add(slug);
+        if (since != null){
+            if (desc){
+                sql.append("AND LOWER(nickname COLLATE \"ucs_basic\") < LOWER(? COLLATE \"ucs_basic\") ");
+            } else sql.append("AND LOWER(nickname COLLATE \"ucs_basic\") > LOWER(? COLLATE \"ucs_basic\") ");
+            args.add(since);
+        }
+        if (desc){
+            sql.append("ORDER BY LOWER(nickname COLLATE \"ucs_basic\") DESC ");
+        } else sql.append("ORDER BY LOWER(nickname COLLATE \"ucs_basic\") ASC ");
+        if (limit != null){
+            sql.append("LIMIT ?");
+            args.add(limit);
+        }
+        sql.append(';');
+        return db.query(sql.toString(), userMapper, args.toArray());
     }
 
     private static final RowMapper<UserEntity> userMapper = (resultSet, rowNum) -> {

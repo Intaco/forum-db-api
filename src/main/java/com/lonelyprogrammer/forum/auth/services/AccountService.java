@@ -70,7 +70,8 @@ public class AccountService {
     }
 
     public List<UserEntity> loadForumUsers (String slug, Integer limit, String since, Boolean desc){
-        return userDAO.loadUsersByForum(slug, limit, TimeUtil.timestampFromString(since), desc);
+        if (desc == null) desc = false;
+        return userDAO.loadUsersByForum(slug, limit, since, desc);
     }
 
     public AccountService(@NotNull UserDAO userDAO) {
