@@ -68,19 +68,23 @@ public class UserDAO {
         final String email = entity.getEmail();
         final StringBuilder builder = new StringBuilder("UPDATE users SET ");
         if (fullname != null) {
-            builder.append(String.format("fullname = '%s'", fullname));
+            builder.append(String.format("fullname = '%s',", fullname));
         }
         if (about != null) {
-            builder.append(String.format("about = '%s'", about));
+            builder.append(String.format("about = '%s',", about));
         }
         if (email != null) {
-            builder.append(String.format("email = '%s'", email));
+            builder.append(String.format("email = '%s',", email));
         }
-
-        builder.append(String.format(", WHERE nickname = '%s'", nickname));
+        final int commaIndex = builder.lastIndexOf(",");
+        if (commaIndex != -1) {
+            builder.replace(commaIndex, commaIndex + 1, "");
+        }
+        builder.append(String.format(" WHERE nickname = '%s'", nickname));
         final String sql = builder.toString();
         db.execute(sql);
     }
+
 
     public List<UserEntity> loadUsersByForum(String slug, Integer limit, @Nullable String since, boolean desc) {
         final StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE nickname IN (SELECT author FROM forum_users WHERE LOWER(forum) = LOWER(?)) ");
