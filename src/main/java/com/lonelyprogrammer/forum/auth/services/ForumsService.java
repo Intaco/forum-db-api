@@ -73,10 +73,4 @@ public class ForumsService {
         return threadDAO.getByForum(forumSlug, limit, TimeUtil.timestampFromString(since), desc);
     }
 
-    @SuppressWarnings("OverlyComplexBooleanExpression")
-    public boolean forumsDifferExceptSlug(ForumEntity forum, ForumEntity data) {
-        return (!forum.getTitle().equals(data.getTitle())
-                || !forum.getPosts().equals(data.getPosts()) || !forum.getThreads().equals(data.getThreads())
-                || !forum.getUser().equals(data.getUser()));
-    }
 }

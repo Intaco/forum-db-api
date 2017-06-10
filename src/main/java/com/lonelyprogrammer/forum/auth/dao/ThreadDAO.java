@@ -1,6 +1,7 @@
 package com.lonelyprogrammer.forum.auth.dao;
 
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
+import com.lonelyprogrammer.forum.auth.utils.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -44,43 +45,28 @@ public class ThreadDAO {
         final String author = resultSet.getString("author");
         final int votes = resultSet.getInt("votes");
         final String title = resultSet.getString("title");
-        final String created = resultSet.getTimestamp("created").toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        final String created = TimeUtil.stringFromTimestamp(resultSet.getTimestamp("created"));
         return new ForumThreadEntity(author, created, forum, id, message, slug, title, votes);
     };
-
+    static final String INSERT_THREAD_SQL = "INSERT INTO threads(title, author, forum, message) VALUES(?,?,?,?) RETURNING id;";
+    static final String UPDATE_CREATED_SQL = "UPDATE threads SET created = ? WHERE id = ? ;";
+    static final String UPDATE_SLUG_SQL = "UPDATE threads SET slug = ? WHERE id = ? ;";
+    static final String INCREMENT_THREADS_COUNT_SQL = "UPDATE forums SET threads = threads + 1 WHERE slug = ? ;";
     @Nullable
-    public ForumThreadEntity add(ForumThreadEntity thread) { // TODO refactor
-        String query = new StringBuilder()
-                .append("INSERT INTO threads(title, author, forum, message) ")
-                .append("VALUES(?,?,?,?) RETURNING id;")
-                .toString();
-        String createdQuery = new StringBuilder()
-                .append("UPDATE threads SET created = ? WHERE id = ? ;")
-                .toString();
-        String slugQuery = new StringBuilder()
-                .append("UPDATE threads SET slug = ? WHERE id = ? ;")
-                .toString();
-        String subQuery = new StringBuilder()
-                .append("UPDATE forums SET threads = threads + 1 ")
-                .append("WHERE slug = ? ;")
-                .toString();
+    public ForumThreadEntity add(ForumThreadEntity thread) {
 
-        ForumThreadEntity newThread = null;
-        int id = db.queryForObject(query, Integer.class, thread.getTitle(), thread.getAuthor(), thread.getForum(), thread.getMessage());
-        db.update(subQuery, thread.getForum());
+
+        final int id = db.queryForObject(INSERT_THREAD_SQL, Integer.class, thread.getTitle(), thread.getAuthor(), thread.getForum(), thread.getMessage());
+        db.update(INCREMENT_THREADS_COUNT_SQL, thread.getForum());
 
         if (thread.getCreated() != null) {
-            String st = ZonedDateTime.parse(thread.getCreated()).format(DateTimeFormatter.ISO_INSTANT);
-            db.update(createdQuery, new Timestamp(ZonedDateTime.parse(st).toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli()), id);
+            db.update(UPDATE_CREATED_SQL, TimeUtil.timestampFromString(thread.getCreated()), id);
         }
 
         if (thread.getSlug() != null) {
-            db.update(slugQuery, thread.getSlug(), id);
+            db.update(UPDATE_SLUG_SQL, thread.getSlug(), id);
         }
-
-        newThread = getById(id);
-
-        return newThread;
+        return getById(id);
     }
     @Nullable
     public ForumThreadEntity getById(int id) {

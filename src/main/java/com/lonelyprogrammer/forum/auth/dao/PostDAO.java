@@ -3,6 +3,7 @@ package com.lonelyprogrammer.forum.auth.dao;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostUpdateEntity;
+import com.lonelyprogrammer.forum.auth.utils.TimeUtil;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ import java.util.List;
 @Transactional
 public class PostDAO {
     private final JdbcTemplate db;
-    private static Logger logger = LoggerFactory.getLogger(PostDAO.class);
+    //private static Logger logger = LoggerFactory.getLogger(PostDAO.class);
 
     public PostDAO(JdbcTemplate db) {
         this.db = db;
@@ -38,36 +39,43 @@ public class PostDAO {
         return db.queryForList(sql, Integer.class, threadId);
     }
 
-    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) throws SQLException{
-        final String sql = "INSERT INTO posts(parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,array_append((SELECT post_path FROM posts WHERE id = ?), currval('posts_id_seq')::INT));";
-        try (Connection connection = db.getDataSource().getConnection()) {
-            final PreparedStatement prepStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            final String timeStr = timestamp.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            for (PostEntity post : posts) {
+    static final String INSERT_POST_SQL = "INSERT INTO posts(id,parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,?,array_append((SELECT post_path FROM posts WHERE id = ?), ?));";
+    static final String NEXT_POST_ID_SQL = "SELECT nextval('posts_id_seq');";
+    static final String FORUM_UPDATE_POSTS_SQL = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
 
-                prepStatement.setInt(1, post.getParent());
-                prepStatement.setString(2, post.getAuthor());
-                prepStatement.setString(3, post.getMessage());
-                prepStatement.setInt(4, thread.getId());
-                prepStatement.setString(5, thread.getForum());
+    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) throws SQLException{
+        try (Connection connection = db.getDataSource().getConnection()) {
+            final PreparedStatement prepStatement = connection.prepareStatement(INSERT_POST_SQL, Statement.NO_GENERATED_KEYS);
+            final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            final String timeStr = TimeUtil.stringFromTimestamp(timestamp);
+            for (PostEntity post : posts) {
+                final Integer id = db.queryForObject(NEXT_POST_ID_SQL, Integer.class);
+                post.setId(id);
+                prepStatement.setInt(1, id);
+                prepStatement.setInt(2, post.getParent());
+                prepStatement.setString(3, post.getAuthor());
+                prepStatement.setString(4, post.getMessage());
+                prepStatement.setInt(5, thread.getId());
+                prepStatement.setString(6, thread.getForum());
                 if (post.getCreated() != null) {
-                    prepStatement.setTimestamp(6, new Timestamp(ZonedDateTime.parse(post.getCreated()).toInstant().toEpochMilli()));
+                    prepStatement.setTimestamp(7, new Timestamp(ZonedDateTime.parse(post.getCreated()).toInstant().toEpochMilli()));
                 } else {
                     post.setCreated(timeStr);
-                    prepStatement.setTimestamp(6, timestamp);
+                    prepStatement.setTimestamp(7, timestamp);
                 }
-                prepStatement.setInt(7, post.getParent());
-
-                prepStatement.addBatch();
                 post.setThread(thread.getId());
                 post.setForum(thread.getForum());
                 post.setCreated(timeStr);
+
+                prepStatement.setInt(8, post.getParent());
+                prepStatement.setInt(9, id);
+                //db.queryForObject(ADD_FORUM_USERS_SQL, Object.class, post.getForum(),post.getAuthor());
+                prepStatement.addBatch();
+
             }
             prepStatement.executeBatch();
-            final ResultSet rs = prepStatement.getGeneratedKeys();
-            for (int i = 0; rs.next(); i++)
-                posts.get(i).setId(rs.getInt(1));
+
+
             prepStatement.close();
         } catch (SQLException e) {
 /*            logger.error("1 error: ", e);
@@ -75,8 +83,7 @@ public class PostDAO {
             throw e;
         }
         ///////////////////////////////////
-        final String forumUpdateSql = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
-        db.update(forumUpdateSql, posts.size(), thread.getForum());
+        db.update(FORUM_UPDATE_POSTS_SQL, posts.size(), thread.getForum());
         ///////////////////////////////////
     }
 
@@ -132,7 +139,7 @@ public class PostDAO {
 
     private static final RowMapper<PostEntity> postMapper = (rs, num) -> {
         final int id = rs.getInt("id");
-        final String created = rs.getTimestamp("created").toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        final String created = TimeUtil.stringFromTimestamp(rs.getTimestamp("created"));
         final int parent = rs.getInt("parent");
         final String message = rs.getString("message");
         final String author = rs.getString("author");

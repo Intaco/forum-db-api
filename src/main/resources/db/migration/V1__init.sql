@@ -25,8 +25,8 @@ FOREIGN KEY (thread_id) REFERENCES threads(id));
 
 CREATE INDEX ON posts (forum);
 CREATE INDEX ON posts (author);
-CREATE index on posts (thread_id, parent, id);
-CREATE index on posts (thread_id, id);
+CREATE INDEX on posts (thread_id, parent, id);
+CREATE INDEX on posts (thread_id, id);
 CREATE INDEX ON posts ((post_path[1]), id);
 CREATE INDEX ON posts (thread_id, post_path);
 
@@ -37,15 +37,15 @@ FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE, UNIQUE (author
 CREATE INDEX ON votes (author, thread_id);
 
 CREATE TABLE IF NOT EXISTS forum_users (
-  author CITEXT REFERENCES users(nickname) NOT NULL,
-  forum CITEXT REFERENCES forums(slug) NOT NULL
+  author CITEXT NOT NULL,
+  forum CITEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_forum_users_user ON forum_users (author);
 CREATE INDEX IF NOT EXISTS idx_forum_users_forum ON forum_users (forum);
 CREATE INDEX IF NOT EXISTS idx_forum_users_both ON forum_users (lower(forum), author);
 
 
-CREATE OR REPLACE FUNCTION update_forum_users() RETURNS TRIGGER AS '
+CREATE OR REPLACE FUNCTION add_forum_users() RETURNS TRIGGER AS '
   BEGIN
     INSERT INTO forum_users (author, forum) VALUES (NEW.author, NEW.forum);
     RETURN NEW;
@@ -54,8 +54,8 @@ CREATE OR REPLACE FUNCTION update_forum_users() RETURNS TRIGGER AS '
 
 DROP TRIGGER IF EXISTS add_post_tr ON posts;
 CREATE TRIGGER add_post_tr AFTER INSERT ON posts
-FOR EACH ROW EXECUTE PROCEDURE update_forum_users();
+FOR EACH ROW EXECUTE PROCEDURE add_forum_users();
 
 DROP TRIGGER IF EXISTS add_thread_tr ON threads;
 CREATE TRIGGER add_thread_tr AFTER INSERT ON threads
-FOR EACH ROW EXECUTE PROCEDURE update_forum_users();
+FOR EACH ROW EXECUTE PROCEDURE add_forum_users();

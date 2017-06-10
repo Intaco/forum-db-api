@@ -1,6 +1,5 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
-import com.lonelyprogrammer.forum.auth.dao.DBDAO;
 import com.lonelyprogrammer.forum.auth.models.entities.UserEntity;
 import com.lonelyprogrammer.forum.auth.services.AccountService;
 import org.jetbrains.annotations.NotNull;

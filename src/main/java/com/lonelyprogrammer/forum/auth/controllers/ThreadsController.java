@@ -24,6 +24,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping(value = "/api/thread")
 @CrossOrigin // for localhost usage
 public class ThreadsController {
+    //private static Logger logger = LoggerFactory.getLogger(ThreadsController.class);
     @NotNull
     private final ThreadsService threadsService;
     @NotNull

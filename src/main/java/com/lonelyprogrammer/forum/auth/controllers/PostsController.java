@@ -5,11 +5,12 @@ import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostUpdateEntity;
 import com.lonelyprogrammer.forum.auth.services.PostsService;
 import org.jetbrains.annotations.NotNull;
-import static org.springframework.http.HttpStatus.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 /**
  * Created by nikita on 27.05.17.
