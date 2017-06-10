@@ -130,7 +130,7 @@ public class ThreadDAO {
         try {
             threads = db.query(query, threadMapper);
         } catch (DataAccessException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return threads;
     }

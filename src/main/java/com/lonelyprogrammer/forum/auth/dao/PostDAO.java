@@ -70,8 +70,8 @@ public class PostDAO {
                 posts.get(i).setId(rs.getInt(1));
             prepStatement.close();
         } catch (SQLException e) {
-            logger.error("1 error: ", e);
-            logger.error("2 error: ", e.getNextException());
+/*            logger.error("1 error: ", e);
+            logger.error("2 error: ", e.getNextException());*/
             throw e;
         }
         ///////////////////////////////////

@@ -26,7 +26,7 @@ public class UserController {
 
     @RequestMapping(path = "/{nickname}/create", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity create(@PathVariable(name = "nickname") String nickname, @RequestBody UserEntity data) {
-        logger.debug("/create called with nickname: {}", nickname);
+        //logger.debug("/create called with nickname: {}", nickname);
         data.setNickname(nickname);
         final HttpStatus status = accountService.create(data);
         if (status == CONFLICT){
@@ -37,7 +37,7 @@ public class UserController {
     }
     @RequestMapping(path = "/{nickname}/profile", method = RequestMethod.GET)
     public ResponseEntity getProfile(@PathVariable(name = "nickname") String nickname) {
-        logger.debug("/get profile called with nickname: {}", nickname);
+        //logger.debug("/get profile called with nickname: {}", nickname);
         final UserEntity data = accountService.loadProfile(nickname);
         if (data == null){
             return ResponseEntity.status(NOT_FOUND).build();
@@ -46,7 +46,7 @@ public class UserController {
     }
     @RequestMapping(path = "/{nickname}/profile", method = RequestMethod.POST)
     public ResponseEntity updateProfile(@PathVariable(name = "nickname") String nickname, @RequestBody UserEntity data) {
-        logger.debug("/update profile called with nickname: {}", nickname);
+        //logger.debug("/update profile called with nickname: {}", nickname);
         data.setNickname(nickname);
         final HttpStatus status = accountService.updateProfile(data);
         if (status != OK){
