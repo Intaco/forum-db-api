@@ -4,6 +4,7 @@ import com.lonelyprogrammer.forum.auth.dao.ForumDAO;
 import com.lonelyprogrammer.forum.auth.dao.PostDAO;
 import com.lonelyprogrammer.forum.auth.dao.ThreadDAO;
 import com.lonelyprogrammer.forum.auth.dao.UserDAO;
+import com.lonelyprogrammer.forum.auth.models.Pair;
 import com.lonelyprogrammer.forum.auth.models.entities.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,12 +33,12 @@ public class PostsService {
     }
 
     @NotNull
-    public List<Integer> getThreadChildrenIds(ForumThreadEntity threadEntity) {
+    public List<Pair<Integer,Integer[]>> getThreadChildrenIds(ForumThreadEntity threadEntity) {
         return postDAO.getThreadChildren(threadEntity.getId());
     }
 
-    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) throws SQLException{
-        postDAO.createPosts(posts, thread);
+    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread, List<Integer[]> paths) throws SQLException{
+        postDAO.createPosts(posts, thread, paths);
     }
 
     @Nullable

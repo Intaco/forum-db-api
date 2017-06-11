@@ -1,5 +1,6 @@
 package com.lonelyprogrammer.forum.auth.dao;
 
+import com.lonelyprogrammer.forum.auth.models.Pair;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostUpdateEntity;
@@ -34,16 +35,16 @@ public class PostDAO {
         this.db = db;
     }
 
-    public List<Integer> getThreadChildren(final Integer threadId) {
-        final String sql = "SELECT id FROM posts WHERE thread_id=?;";
-        return db.queryForList(sql, Integer.class, threadId);
+    public List<Pair<Integer,Integer[]>> getThreadChildren(final Integer threadId) {
+        final String sql = "SELECT id, post_path FROM posts WHERE thread_id=?;";
+        return db.query(sql, parentWithpathMapper, threadId);
     }
 
-    static final String INSERT_POST_SQL = "INSERT INTO posts(id,parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,?,array_append((SELECT post_path FROM posts WHERE id = ?), ?));";
+    static final String INSERT_POST_SQL = "INSERT INTO posts(id,parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,?,array_append(?, ?));";
     static final String NEXT_POST_ID_SQL = "SELECT nextval('posts_id_seq') from generate_series(1, ?);";
     static final String FORUM_UPDATE_POSTS_SQL = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
 
-    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) throws SQLException{
+    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread, List<Integer[]> paths) throws SQLException{
         try (Connection connection = db.getDataSource().getConnection()) {
             final PreparedStatement prepStatement = connection.prepareStatement(INSERT_POST_SQL, Statement.NO_GENERATED_KEYS);
             final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -52,6 +53,9 @@ public class PostDAO {
             int i = 0;
             int id;
             for (PostEntity post : posts) {
+                if (paths.get(i) == null){
+                    prepStatement.setArray(8, null);
+                } else prepStatement.setArray(8, connection.createArrayOf("int4", paths.get(i)));
                 id = ids.get(i++);
                 post.setId(id);
                 prepStatement.setInt(1, id);
@@ -69,8 +73,6 @@ public class PostDAO {
                 post.setThread(thread.getId());
                 post.setForum(thread.getForum());
                 post.setCreated(timeStr);
-
-                prepStatement.setInt(8, post.getParent());
                 prepStatement.setInt(9, id);
                 //db.queryForObject(ADD_FORUM_USERS_SQL, Object.class, post.getForum(),post.getAuthor());
                 prepStatement.addBatch();
@@ -145,4 +147,5 @@ public class PostDAO {
             rs.getInt("parent"), rs.getString("message"), rs.getString("author"),
             rs.getString("forum"), rs.getBoolean("isEdited"), rs.getInt("thread_id"));
     private static final RowMapper<Integer> parentMapper = (rs, num) -> rs.getInt("id");
+    private static final RowMapper<Pair<Integer, Integer[]>> parentWithpathMapper = (rs, num) -> new Pair(rs.getInt("id"), (Integer[])rs.getArray("post_path").getArray());
 }

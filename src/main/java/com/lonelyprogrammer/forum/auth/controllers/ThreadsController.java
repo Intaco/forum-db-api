@@ -1,6 +1,7 @@
 package com.lonelyprogrammer.forum.auth.controllers;
 
 import com.lonelyprogrammer.forum.auth.dao.VoteDAO;
+import com.lonelyprogrammer.forum.auth.models.Pair;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.VoteEntity;
@@ -12,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -42,13 +45,18 @@ public class ThreadsController {
         if (loaded == null) {
             return ResponseEntity.notFound().build();
         }
-        final List<Integer> children = postsService.getThreadChildrenIds(loaded);
+        final List<Pair<Integer,Integer[]>> children = postsService.getThreadChildrenIds(loaded);
+        final List<Integer[]> paths = new ArrayList<>();
         for (PostEntity post : posts) {
             final int parentId = post.getParent();
-            if (parentId != 0 && !children.contains(parentId)) return ResponseEntity.status(CONFLICT).build();
+            if (parentId!=0){
+                final Optional<Pair<Integer, Integer[]>> opt = children.stream().filter(e -> e.x == parentId).findFirst();
+                if (!opt.isPresent()) return ResponseEntity.status(CONFLICT).build();
+                else paths.add(opt.get().y);
+            } else paths.add(null);
         }
         try {
-            postsService.createPosts(posts, loaded);
+            postsService.createPosts(posts, loaded, paths);
         } catch (DuplicateKeyException e) {
             return ResponseEntity.status(CONFLICT).build();
         } catch (SQLException e) {
