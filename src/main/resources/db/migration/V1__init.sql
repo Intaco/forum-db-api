@@ -23,12 +23,12 @@ FOREIGN KEY (author) REFERENCES users(nickname),
 FOREIGN KEY (forum) REFERENCES forums(slug),
 FOREIGN KEY (thread_id) REFERENCES threads(id));
 
-CREATE INDEX ON posts (forum);
-CREATE INDEX ON posts (author);
-CREATE INDEX on posts (thread_id, parent, id);
-CREATE INDEX on posts (thread_id, id);
+CREATE INDEX ON posts (author,forum);
+CREATE INDEX ON posts (id, parent, thread_id);
+CREATE INDEX ON posts (thread_id, id);
 CREATE INDEX ON posts ((post_path[1]), id);
 CREATE INDEX ON posts (thread_id, post_path);
+CREATE INDEX ON posts (thread_id, created, id);
 
 CREATE TABLE IF NOT EXISTS votes (author CITEXT NOT NULL, thread_id BIGINT NOT NULL, voice INT NOT NULL,
 FOREIGN KEY (author) REFERENCES users(nickname) ON DELETE CASCADE,
