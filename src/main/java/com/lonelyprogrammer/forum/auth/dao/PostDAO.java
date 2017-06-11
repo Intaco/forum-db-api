@@ -40,7 +40,7 @@ public class PostDAO {
     }
 
     static final String INSERT_POST_SQL = "INSERT INTO posts(id,parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,?,array_append((SELECT post_path FROM posts WHERE id = ?), ?));";
-    static final String NEXT_POST_ID_SQL = "SELECT nextval('posts_id_seq');";
+    static final String NEXT_POST_ID_SQL = "SELECT nextval('posts_id_seq') from generate_series(1, ?);";
     static final String FORUM_UPDATE_POSTS_SQL = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
 
     public void createPosts(List<PostEntity> posts, ForumThreadEntity thread) throws SQLException{
@@ -48,8 +48,11 @@ public class PostDAO {
             final PreparedStatement prepStatement = connection.prepareStatement(INSERT_POST_SQL, Statement.NO_GENERATED_KEYS);
             final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             final String timeStr = TimeUtil.stringFromTimestamp(timestamp);
+            final List<Integer> ids = db.queryForList(NEXT_POST_ID_SQL, Integer.class, posts.size());
+            int i = 0;
+            int id;
             for (PostEntity post : posts) {
-                final Integer id = db.queryForObject(NEXT_POST_ID_SQL, Integer.class);
+                id = ids.get(i++);
                 post.setId(id);
                 prepStatement.setInt(1, id);
                 prepStatement.setInt(2, post.getParent());
@@ -58,7 +61,7 @@ public class PostDAO {
                 prepStatement.setInt(5, thread.getId());
                 prepStatement.setString(6, thread.getForum());
                 if (post.getCreated() != null) {
-                    prepStatement.setTimestamp(7, new Timestamp(ZonedDateTime.parse(post.getCreated()).toInstant().toEpochMilli()));
+                    prepStatement.setTimestamp(7, TimeUtil.timestampFromString(post.getCreated()));
                 } else {
                     post.setCreated(timeStr);
                     prepStatement.setTimestamp(7, timestamp);
@@ -137,16 +140,9 @@ public class PostDAO {
         db.update(sql, post.getMessage(), post.getId());
     }
 
-    private static final RowMapper<PostEntity> postMapper = (rs, num) -> {
-        final int id = rs.getInt("id");
-        final String created = TimeUtil.stringFromTimestamp(rs.getTimestamp("created"));
-        final int parent = rs.getInt("parent");
-        final String message = rs.getString("message");
-        final String author = rs.getString("author");
-        final String forum = rs.getString("forum");
-        final boolean isEdited = rs.getBoolean("isEdited");
-        final int thread = rs.getInt("thread_id");
-        return new PostEntity(id, created, parent, message, author, forum, isEdited, thread);
-    };
+    private static final RowMapper<PostEntity> postMapper = (rs, num) -> new PostEntity(rs.getInt("id"),
+            TimeUtil.stringFromTimestamp(rs.getTimestamp("created")),
+            rs.getInt("parent"), rs.getString("message"), rs.getString("author"),
+            rs.getString("forum"), rs.getBoolean("isEdited"), rs.getInt("thread_id"));
     private static final RowMapper<Integer> parentMapper = (rs, num) -> rs.getInt("id");
 }
