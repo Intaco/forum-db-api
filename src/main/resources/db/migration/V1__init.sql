@@ -52,10 +52,6 @@ CREATE OR REPLACE FUNCTION add_forum_users() RETURNS TRIGGER AS '
   END;
 ' LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS add_post_tr ON posts;
-CREATE TRIGGER add_post_tr AFTER INSERT ON posts
-FOR EACH ROW EXECUTE PROCEDURE add_forum_users();
-
 DROP TRIGGER IF EXISTS add_thread_tr ON threads;
 CREATE TRIGGER add_thread_tr AFTER INSERT ON threads
 FOR EACH ROW EXECUTE PROCEDURE add_forum_users();

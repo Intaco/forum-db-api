@@ -43,10 +43,12 @@ public class PostDAO {
     static final String INSERT_POST_SQL = "INSERT INTO posts(id,parent, author, message, thread_id, forum, created, post_path) VALUES(?,?,?,?,?,?,?,array_append(?, ?));";
     static final String NEXT_POST_ID_SQL = "SELECT nextval('posts_id_seq') from generate_series(1, ?);";
     static final String FORUM_UPDATE_POSTS_SQL = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
+    static final String UPDATE_FORUM_USERS_SQL = "INSERT INTO forum_users (author, forum) VALUES (?, ?);";
 
     public void createPosts(List<PostEntity> posts, ForumThreadEntity thread, List<Integer[]> paths) throws SQLException{
         try (Connection connection = db.getDataSource().getConnection()) {
             final PreparedStatement prepStatement = connection.prepareStatement(INSERT_POST_SQL, Statement.NO_GENERATED_KEYS);
+            final PreparedStatement updateForumsStatement = connection.prepareStatement(UPDATE_FORUM_USERS_SQL, Statement.NO_GENERATED_KEYS);
             final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             final String timeStr = TimeUtil.stringFromTimestamp(timestamp);
             final List<Integer> ids = db.queryForList(NEXT_POST_ID_SQL, Integer.class, posts.size());
@@ -74,14 +76,20 @@ public class PostDAO {
                 post.setForum(thread.getForum());
                 post.setCreated(timeStr);
                 prepStatement.setInt(9, id);
-                //db.queryForObject(ADD_FORUM_USERS_SQL, Object.class, post.getForum(),post.getAuthor());
+                updateForumsStatement.setString(1, post.getAuthor());
+                updateForumsStatement.setString(2, post.getForum());
+                updateForumsStatement.addBatch();
+                /*db.queryForObject(ADD_FORUM_USERS_SQL, Object.class, post.getForum(),post.getAuthor());*/
                 prepStatement.addBatch();
 
             }
             prepStatement.executeBatch();
-
+            updateForumsStatement.executeBatch();
+            updateForumsStatement.close();
 
             prepStatement.close();
+
+
         } catch (SQLException e) {
 /*            logger.error("1 error: ", e);
             logger.error("2 error: ", e.getNextException());*/
