@@ -7,21 +7,14 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by nikita
@@ -52,6 +45,7 @@ public class ThreadDAO {
     static final String UPDATE_CREATED_SQL = "UPDATE threads SET created = ? WHERE id = ? ;";
     static final String UPDATE_SLUG_SQL = "UPDATE threads SET slug = ? WHERE id = ? ;";
     static final String INCREMENT_THREADS_COUNT_SQL = "UPDATE forums SET threads = threads + 1 WHERE slug = ? ;";
+
     @Nullable
     public ForumThreadEntity add(ForumThreadEntity thread) {
 
@@ -68,13 +62,14 @@ public class ThreadDAO {
         }
         return getById(id);
     }
+
     @Nullable
     public ForumThreadEntity getById(int id) {
 
         ForumThreadEntity loaded = null;
         try {
-            final String query = String.format("SELECT * FROM threads WHERE id = '%d';", id);
-            loaded = db.queryForObject(query, threadMapper);
+            final String query = "SELECT * FROM threads WHERE id = ?";
+            loaded = db.queryForObject(query, threadMapper, id);
         } catch (DataAccessException e) {
 
         }
@@ -86,35 +81,40 @@ public class ThreadDAO {
 
         ForumThreadEntity loaded = null;
         try {
-            final String query = String.format("SELECT * FROM threads WHERE slug = '%s';", slug);
-            loaded = db.queryForObject(query, threadMapper);
+            final String query = "SELECT * FROM threads WHERE slug = ?::CITEXT";
+            loaded = db.queryForObject(query, threadMapper, slug);
         } catch (DataAccessException e) {
 
         }
         return loaded;
     }
-    public int getCount(){
+
+    public int getCount() {
         final String sql = "SELECT COUNT(id) FROM threads ;";
         return db.queryForObject(sql, Integer.class);
     }
 
     @NotNull
     public List<ForumThreadEntity> getByForum(String slug, Integer limit, @Nullable Timestamp time, boolean desc) {
-        final StringBuilder builder = new StringBuilder(String.format("SELECT * FROM threads WHERE forum = '%s' ", slug));
+        final StringBuilder builder = new StringBuilder("SELECT * FROM threads WHERE forum = ?::CITEXT ");
+        final List<Object> args = new ArrayList<>();
+        args.add(slug);
         if (time != null) {
-            if (desc) builder.append(String.format("AND created <= '%s'", time));
-            else builder.append(String.format("AND created >= '%s'", time));
+            if (desc) builder.append("AND created <= ?");
+            else builder.append("AND created >= ?");
+            args.add(time);
         }
         if (desc) {
             builder.append("ORDER BY created DESC ");
         } else builder.append("ORDER BY created ");
 
-        builder.append(String.format("LIMIT '%s';", limit));
+        builder.append("LIMIT ?;");
+        args.add(limit);
         final String query = builder.toString();
 
         List<ForumThreadEntity> threads = new ArrayList<>();
         try {
-            threads = db.query(query, threadMapper);
+            threads = db.query(query, threadMapper, args.toArray());
         } catch (DataAccessException e) {
             //e.printStackTrace();
         }

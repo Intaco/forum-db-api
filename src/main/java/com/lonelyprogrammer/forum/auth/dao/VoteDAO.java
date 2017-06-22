@@ -21,8 +21,10 @@ public class VoteDAO {
         this.db = template;
         this.threadDAO = threadDAO;
     }
+
     static final String INSERT_VOTES_SQL = "INSERT INTO votes (author, thread_id, voice) VALUES(?,?,?) ON CONFLICT(author, thread_id) DO UPDATE SET voice = excluded.voice ;";
-    public void createVote(VoteEntity vote, ForumThreadEntity thread){
+
+    public void createVote(VoteEntity vote, ForumThreadEntity thread) {
 
         db.update(INSERT_VOTES_SQL, vote.getNickname(), thread.getId(), vote.getVoice());
         threadDAO.updateVotesForThread(thread);

@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,17 +31,16 @@ public class UserDAO {
 
     @NotNull
     public List<UserEntity> getSimilarUsers(UserEntity entity) {
-        final String sql = String.format("SELECT * FROM users WHERE nickname = '%s' OR email = '%s';",
-                entity.getNickname(), entity.getEmail());
-        return db.query(sql, userMapper);
+        final String sql = "SELECT * FROM users WHERE nickname = ?::CITEXT OR email = ?::CITEXT";
+        return db.query(sql, userMapper, entity.getNickname(), entity.getEmail());
     }
 
     @Nullable
-    public UserEntity getByNickname(String nickName) {
+    public UserEntity getByNickname(String nickname) {
         UserEntity loaded = null;
         try {
-            final String sql = String.format("SELECT * FROM users WHERE nickname = '%s';", nickName);
-            loaded = db.queryForObject(sql, userMapper);
+            final String sql = "SELECT * FROM users WHERE nickname = ?::CITEXT";
+            loaded = db.queryForObject(sql, userMapper, nickname);
         } catch (DataAccessException e) {
 
         }
@@ -53,8 +51,8 @@ public class UserDAO {
     public UserEntity getByEmail(String email) {
         UserEntity loaded = null;
         try {
-            final String sql = String.format("SELECT * FROM users WHERE email = '%s';", email);
-            loaded = db.queryForObject(sql, userMapper);
+            final String sql = "SELECT * FROM users WHERE email = ?::CITEXT";
+            loaded = db.queryForObject(sql, userMapper, email);
         } catch (DataAccessException e) {
 
         }
@@ -66,23 +64,28 @@ public class UserDAO {
         final String fullname = entity.getFullName();
         final String about = entity.getAbout();
         final String email = entity.getEmail();
+        final List<Object> args = new ArrayList<>();
         final StringBuilder builder = new StringBuilder("UPDATE users SET ");
         if (fullname != null) {
-            builder.append(String.format("fullname = '%s',", fullname));
+            builder.append("fullname = ?,");
+            args.add(fullname);
         }
         if (about != null) {
-            builder.append(String.format("about = '%s',", about));
+            builder.append("about = ?,");
+            args.add(about);
         }
         if (email != null) {
-            builder.append(String.format("email = '%s',", email));
+            builder.append("email = ?::CITEXT,");
+            args.add(email);
         }
         final int commaIndex = builder.lastIndexOf(",");
         if (commaIndex != -1) {
             builder.replace(commaIndex, commaIndex + 1, "");
         }
-        builder.append(String.format(" WHERE nickname = '%s'", nickname));
+        builder.append(" WHERE nickname = ?::CITEXT");
+        args.add(nickname);
         final String sql = builder.toString();
-        db.execute(sql);
+        db.update(sql, args.toArray());
     }
 
 
@@ -90,23 +93,24 @@ public class UserDAO {
         final StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE nickname IN (SELECT author FROM forum_users WHERE LOWER(forum) = LOWER(?)) ");
         final List<Object> args = new ArrayList<>();
         args.add(slug);
-        if (since != null){
-            if (desc){
+        if (since != null) {
+            if (desc) {
                 sql.append("AND LOWER(nickname COLLATE \"ucs_basic\") < LOWER(? COLLATE \"ucs_basic\") ");
             } else sql.append("AND LOWER(nickname COLLATE \"ucs_basic\") > LOWER(? COLLATE \"ucs_basic\") ");
             args.add(since);
         }
-        if (desc){
+        if (desc) {
             sql.append("ORDER BY LOWER(nickname COLLATE \"ucs_basic\") DESC ");
         } else sql.append("ORDER BY LOWER(nickname COLLATE \"ucs_basic\") ASC ");
-        if (limit != null){
+        if (limit != null) {
             sql.append("LIMIT ?");
             args.add(limit);
         }
         sql.append(';');
         return db.query(sql.toString(), userMapper, args.toArray());
     }
-    public int getCount(){
+
+    public int getCount() {
         final String sql = "SELECT COUNT(nickname) FROM users ;";
         return db.queryForObject(sql, Integer.class);
     }

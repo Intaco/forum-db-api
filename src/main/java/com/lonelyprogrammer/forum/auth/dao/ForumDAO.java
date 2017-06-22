@@ -24,8 +24,8 @@ public class ForumDAO {
 
         ForumEntity loaded = null;
         try{
-            final String sql = String.format("SELECT * FROM forums WHERE slug = '%s';", slug);
-            loaded = db.queryForObject(sql, forumMapper);
+            final String sql = "SELECT * FROM forums WHERE slug = ?::CITEXT";
+            loaded = db.queryForObject(sql, forumMapper, slug);
         }
         catch (DataAccessException e){}
         return loaded;

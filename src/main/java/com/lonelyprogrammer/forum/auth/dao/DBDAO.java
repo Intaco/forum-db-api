@@ -1,6 +1,5 @@
 package com.lonelyprogrammer.forum.auth.dao;
 
-import com.lonelyprogrammer.forum.auth.models.entities.StatusEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

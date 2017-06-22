@@ -3,22 +3,14 @@ package com.lonelyprogrammer.forum.auth.dao;
 import com.lonelyprogrammer.forum.auth.models.Pair;
 import com.lonelyprogrammer.forum.auth.models.entities.ForumThreadEntity;
 import com.lonelyprogrammer.forum.auth.models.entities.PostEntity;
-import com.lonelyprogrammer.forum.auth.models.entities.PostUpdateEntity;
 import com.lonelyprogrammer.forum.auth.utils.TimeUtil;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +27,7 @@ public class PostDAO {
         this.db = db;
     }
 
-    public List<Pair<Integer,Integer[]>> getThreadChildren(final Integer threadId) {
+    public List<Pair<Integer, Integer[]>> getThreadChildren(final Integer threadId) {
         final String sql = "SELECT id, post_path FROM posts WHERE thread_id=?;";
         return db.query(sql, parentWithpathMapper, threadId);
     }
@@ -45,7 +37,7 @@ public class PostDAO {
     static final String FORUM_UPDATE_POSTS_SQL = "UPDATE forums SET posts = posts + ? WHERE slug = ?;";
     static final String UPDATE_FORUM_USERS_SQL = "INSERT INTO forum_users (author, forum) VALUES (?, ?);";
 
-    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread, List<Integer[]> paths) throws SQLException{
+    public void createPosts(List<PostEntity> posts, ForumThreadEntity thread, List<Integer[]> paths) throws SQLException {
         try (Connection connection = db.getDataSource().getConnection()) {
             final PreparedStatement prepStatement = connection.prepareStatement(INSERT_POST_SQL, Statement.NO_GENERATED_KEYS);
             final PreparedStatement updateForumsStatement = connection.prepareStatement(UPDATE_FORUM_USERS_SQL, Statement.NO_GENERATED_KEYS);
@@ -55,7 +47,7 @@ public class PostDAO {
             int i = 0;
             int id;
             for (PostEntity post : posts) {
-                if (paths.get(i) == null){
+                if (paths.get(i) == null) {
                     prepStatement.setArray(8, null);
                 } else prepStatement.setArray(8, connection.createArrayOf("int4", paths.get(i)));
                 id = ids.get(i++);
@@ -131,21 +123,24 @@ public class PostDAO {
         final String sql = "SELECT id from posts where parent = 0 AND thread_id = ? ORDER BY id " + (desc ? "DESC " : "ASC ") + " LIMIT ? OFFSET ?;";
         return db.query(sql, parentMapper, id, limit, offset);
     }
+
     @Nullable
-    public PostEntity getById(int id){
-        try{
+    public PostEntity getById(int id) {
+        try {
             final String sql = "SELECT * FROM posts WHERE id = ?;";
             return db.queryForObject(sql, postMapper, id);
-        } catch (Exception e){
+        } catch (Exception e) {
             //e.printStackTrace();
             return null;
         }
     }
-    public int getCount(){
+
+    public int getCount() {
         final String sql = "SELECT COUNT(id) FROM posts ;";
         return db.queryForObject(sql, Integer.class);
     }
-    public void updatePost(PostEntity post){
+
+    public void updatePost(PostEntity post) {
         final String sql = "UPDATE posts SET message = ?, isEdited = TRUE WHERE id = ?;";
         db.update(sql, post.getMessage(), post.getId());
     }
@@ -155,5 +150,5 @@ public class PostDAO {
             rs.getInt("parent"), rs.getString("message"), rs.getString("author"),
             rs.getString("forum"), rs.getBoolean("isEdited"), rs.getInt("thread_id"));
     private static final RowMapper<Integer> parentMapper = (rs, num) -> rs.getInt("id");
-    private static final RowMapper<Pair<Integer, Integer[]>> parentWithpathMapper = (rs, num) -> new Pair(rs.getInt("id"), (Integer[])rs.getArray("post_path").getArray());
+    private static final RowMapper<Pair<Integer, Integer[]>> parentWithpathMapper = (rs, num) -> new Pair(rs.getInt("id"), (Integer[]) rs.getArray("post_path").getArray());
 }
